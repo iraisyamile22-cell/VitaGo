@@ -92,7 +92,7 @@ app.UseDefaultFiles();
 app.UseStaticFiles();
 
 app.UseHttpsRedirection();
-app.UseCors("NombreDeTuPolitica");             // si tu política tiene nombre: app.UseCors("NombreDeTuPolitica")
+app.UseCors("NuevaPolitica");
 app.UseAuthentication();   // primero autenticación
 app.UseAuthorization();    // después autorización
 app.MapControllers();

@@ -1,8 +1,14 @@
-﻿// Muestra el nombre del usuario en el navbar si ya inició sesión (auth.js define mostrarUsuario)
+﻿// Saludo en el index cuando el usuario ya inició sesión (auth.js define obtenerUsuario y saludoSegunHora)
 document.addEventListener("DOMContentLoaded", () => {
-    if (typeof mostrarUsuario === "function") {
-        mostrarUsuario("nombreUsuario");
-    }
+    const saludo = document.getElementById("saludoUsuario");
+    if (!saludo || typeof obtenerUsuario !== "function") return;
+
+    const usuario = obtenerUsuario();
+    if (!usuario) return;
+
+    document.getElementById("saludoTexto").textContent =
+        `¡${saludoSegunHora()}, ${nombreParaMostrar(usuario)}!`;
+    saludo.classList.remove("d-none");
 });
 
 function buscarMedicos() {

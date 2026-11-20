@@ -19,23 +19,68 @@ const menuHTML = `
             <a href="index.html#especialidades">Especialidades</a>
         </div>
 
-        <!-- Botones de Iniciar sesión y Registrarse -->
-        <div style="display:flex; gap:10px; align-items:center;">
-            <a href="login.html" class="btn" style="background:#fff; color:#0f172a; border:1px solid #e2e8f0; border-radius:20px; font-weight:600; padding:6px 20px;">
-                Iniciar sesión
-            </a>
-            <!-- AQUÍ ESTÁ LA CORRECCIÓN: Ahora apunta a registro-medico.html -->
-            <a href="registro-medico.html" class="btn" style="background:#10b981; color:#fff; border-radius:20px; font-weight:600; padding:6px 20px; border: 1px solid #10b981;">
-                Registrarse
-            </a>
-        </div>
+        <!-- Botones de sesión (se rellenan según si el usuario inició sesión) -->
+        <div id="vg-nav-sesion" style="display:flex; gap:10px; align-items:center;"></div>
     </nav>
 `;
+
+// Botones cuando NO hay sesión
+const botonesInvitado = `
+    <a href="login.html" class="btn" style="background:#fff; color:#0f172a; border:1px solid #e2e8f0; border-radius:20px; font-weight:600; padding:6px 20px;">
+        Iniciar sesión
+    </a>
+    <a href="registro-medico.html" class="btn" style="background:#10b981; color:#fff; border-radius:20px; font-weight:600; padding:6px 20px; border: 1px solid #10b981;">
+        Registrarse
+    </a>
+`;
+
+// Lee la sesión directo de sessionStorage (misma clave que js/auth.js), así funciona
+// también en páginas que no cargan auth.js
+function leerSesionNavbar() {
+    try {
+        const sesion = JSON.parse(sessionStorage.getItem("vitago_sesion"));
+        if (!sesion || (sesion.expiraEn && new Date(sesion.expiraEn) <= new Date())) return null;
+        return sesion;
+    } catch {
+        return null;
+    }
+}
+
+function pintarSesionNavbar() {
+    const contenedor = document.getElementById("vg-nav-sesion");
+    if (!contenedor) return;
+
+    const sesion = leerSesionNavbar();
+    if (!sesion) {
+        contenedor.innerHTML = botonesInvitado;
+        return;
+    }
+
+    const nombre = (sesion.nombre && sesion.nombre.trim()) || (sesion.correo || "").split("@")[0];
+
+    const chip = document.createElement("a");
+    chip.href = "editar-perfil.html";
+    chip.title = "Ver mi perfil";
+    chip.style.cssText = "background:#fff; color:#0f172a; border:1px solid #e2e8f0; border-radius:20px; font-weight:600; padding:6px 16px; font-size:14px; text-decoration:none;";    chip.textContent = "👤 " + nombre; // textContent evita inyectar HTML
+
+    const salir = document.createElement("button");
+    salir.type = "button";
+    salir.className = "btn";
+    salir.style.cssText = "background:#10b981; color:#fff; border-radius:20px; font-weight:600; padding:6px 20px; border:1px solid #10b981;";
+    salir.textContent = "Cerrar sesión";
+    salir.addEventListener("click", () => {
+        sessionStorage.removeItem("vitago_sesion");
+        window.location.replace("index.html");
+    });
+
+    contenedor.replaceChildren(chip, salir);
+}
 
 // 2. Esta función inyecta el menú cuando la página carga
 document.addEventListener("DOMContentLoaded", () => {
     const contenedorMenu = document.getElementById("menu-dinamico");
     if (contenedorMenu) {
         contenedorMenu.innerHTML = menuHTML;
+        pintarSesionNavbar();
     }
 });
