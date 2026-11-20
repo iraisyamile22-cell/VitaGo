@@ -1,6 +1,8 @@
 ﻿using MiWebAPI.Models;
 using System.Data;
 using System.Data.SqlClient;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace MiWebAPI.Data
 {
@@ -59,6 +61,40 @@ namespace MiWebAPI.Data
                     Respuesta = "Ocurrió un error al procesar la solicitud"
                 };
             }
+        }
+
+        public async Task<PacientePerfil?> ObtenerPerfil(Guid pacienteId)
+        {
+            await using var con = new SqlConnection(_conexion);
+            await using var cmd = new SqlCommand("sp_perfilPaciente", con)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            cmd.Parameters.Add(new SqlParameter("@PacienteId", SqlDbType.UniqueIdentifier) { Value = pacienteId });
+
+            await con.OpenAsync();
+            await using var r = await cmd.ExecuteReaderAsync();
+            if (!await r.ReadAsync()) return null;
+
+            // Lee una columna como texto aunque venga NULL
+            string? Texto(string columna)
+            {
+                int i = r.GetOrdinal(columna);
+                return r.IsDBNull(i) ? null : Convert.ToString(r.GetValue(i));
+            }
+
+            int iFecha = r.GetOrdinal("FechaNacimiento");
+
+            return new PacientePerfil
+            {
+                Id = r.GetGuid(r.GetOrdinal("Id")),
+                Nombre = Texto("Nombre") ?? string.Empty,
+                Apellidos = Texto("Apellidos"),
+                Telefono = Texto("Telefono"),
+                FechaNacimiento = r.IsDBNull(iFecha) ? null : r.GetDateTime(iFecha),
+                Genero = Texto("Genero"),
+                FotoUrl = Texto("FotoUrl")
+            };
         }
     }
 }

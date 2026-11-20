@@ -156,3 +156,22 @@ begin
 		set @respuesta = error_message();
 	end catch
 end
+
+go 
+
+CREATE OR ALTER PROCEDURE sp_perfilPaciente
+    @PacienteId UNIQUEIDENTIFIER
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT id               AS Id,
+           nombre           AS Nombre,
+           apellidos        AS Apellidos,
+           telefono         AS Telefono,
+           fecha_nacimiento AS FechaNacimiento,
+           genero           AS Genero,
+           foto_url         AS FotoUrl
+    FROM PACIENTE
+    WHERE id = @PacienteId;
+END

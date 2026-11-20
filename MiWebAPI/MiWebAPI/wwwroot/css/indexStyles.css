@@ -180,6 +180,7 @@ html, body {
    HERO BANNER IMAGEN (100% Ancho)
    ========================================= */
 .hero-image-banner {
+    position: relative; /* para posicionar el saludo encima de la imagen */
     width: 100%;
     height: 350px;
     background-color: var(--vg-line); /* Color de fondo mientras carga */
@@ -621,3 +622,46 @@ html, body {
         color: #0f172a;
         font-weight: 700;
     }
+
+
+/* =========================================
+   SALUDO AL USUARIO (index, con sesión iniciada)
+   ========================================= */
+.vg-greeting {
+    position: absolute;
+    left: 5%;
+    bottom: 28px;
+    max-width: 90%;
+    padding: 16px 24px;
+    border-radius: 18px;
+    background-color: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+    animation: vg-greeting-in 0.5s ease-out;
+}
+
+.vg-greeting-title {
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.vg-greeting-sub {
+    margin: 4px 0 0;
+    font-size: 0.95rem;
+    color: #475569;
+}
+
+@keyframes vg-greeting-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
