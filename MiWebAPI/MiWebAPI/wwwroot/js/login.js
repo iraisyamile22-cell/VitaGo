@@ -11,6 +11,18 @@ const textoBotonOriginal = btnLogin.innerHTML;
 // Si ya hay una sesión activa, no tiene caso volver a iniciar sesión
 if (obtenerUsuario()) window.location.replace("index.html");
 
+// Ojito: alterna entre ver y ocultar la contraseña
+const btnVerPassword = document.getElementById("btnVerPassword");
+btnVerPassword.addEventListener("click", () => {
+  const oculta = password.type === "password";
+  password.type = oculta ? "text" : "password";
+  btnVerPassword.querySelector("i").className = oculta ? "bi bi-eye-slash" : "bi bi-eye";
+  const texto = oculta ? "Ocultar contraseña" : "Mostrar contraseña";
+  btnVerPassword.title = texto;
+  btnVerPassword.setAttribute("aria-label", texto);
+  password.focus();
+});
+
 // "Recordar usuario": rellena el correo guardado
 const correoGuardado = localStorage.getItem(RECORDAR_KEY);
 if (correoGuardado) {
