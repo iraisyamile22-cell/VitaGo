@@ -39,20 +39,9 @@ namespace MiWebAPI.Data
             return lista;
         }
 
-        public async Task<Doctor?> Obtener(Guid id)
-        {
-            await using var con = new SqlConnection(_conexion);
-            await con.OpenAsync();
-
-            await using var cmd = new SqlCommand("sp_obtenerDoctor", con)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            cmd.Parameters.AddWithValue("@IdDoctor", id);
-
-            await using var reader = await cmd.ExecuteReaderAsync();
-            return await reader.ReadAsync() ? Mapear(reader) : null;
-        }
+        // sp_obtenerDoctor no existe en la base: se reutiliza sp_listarDoctores y se filtra
+        public async Task<Doctor?> Obtener(Guid id) =>
+            (await Lista()).FirstOrDefault(d => d.Id == id);
 
         public async Task<MedicoPerfil?> Perfil(Guid id)
         {
@@ -216,13 +205,16 @@ namespace MiWebAPI.Data
             Ejecutar("sp_editarDoctor", p =>
             {
                 p.AddWithValue("@IdDoctor", d.Id);
-                p.AddWithValue("@Nombre", d.Nombre ?? string.Empty);
-                //p.AddWithValue("@Apellido", d.Apellido ?? string.Empty);
-                p.AddWithValue("@Especialidad", d.Especialidad ?? string.Empty);
-                p.AddWithValue("@Cedula", d.Cedula ?? string.Empty);
-                p.AddWithValue("@Correo", d.Correo ?? string.Empty);
+                p.AddWithValue("@Nombre", (d.Nombre ?? string.Empty).Trim());
+                p.AddWithValue("@Apellidos", (d.Apellidos ?? string.Empty).Trim());
+                p.AddWithValue("@Cedula", (d.Cedula ?? string.Empty).Trim());
+                p.AddWithValue("@Correo", (d.Correo ?? string.Empty).Trim());
                 p.AddWithValue("@Telefono", (object?)d.Telefono ?? DBNull.Value);
                 p.AddWithValue("@PrecioConsulta", d.PrecioConsulta);
+                p.AddWithValue("@Bio", (object?)d.Bio ?? DBNull.Value);
+                p.AddWithValue("@AniosExperiencia", d.AniosExperiencia);
+                p.AddWithValue("@Idiomas", (object?)d.Idiomas ?? DBNull.Value);
+                p.AddWithValue("@ConsultaOnline", d.ConsultaOnline);
             });
 
         public Task<RespuestaOperacion> Eliminar(Guid id) =>

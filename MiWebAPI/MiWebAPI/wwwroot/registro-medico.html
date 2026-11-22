@@ -1,140 +1,546 @@
-﻿<!doctype html>
+﻿
+<!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Registro de Médico | vitaGo</title>
+
+    <title>Registro de cuenta | vitaGo</title>
+
+    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Fuente -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Estilos vitaGo -->
     <link rel="stylesheet" href="css/indexStyles.css">
+    <link rel="stylesheet" href="css/registro.css">
+
+    <!-- Iconos Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
     <script src="js/warningOffline.js"></script>
+
+
 </head>
+
 <body class="bg-light">
 
-    
+    <!-- Navbar dinámico -->
     <div id="menu-dinamico"></div>
 
-    <!-- Se agrega mt-5 para dar espacio debajo del menú fijo -->
-    <div class="container vg-page py-4 mt-5">
+    <main class="container vg-page py-4 mt-5 pt-5">
 
-        <!-- Contenedor Principal de Registro -->
         <div class="row justify-content-center">
-            <div class="col-lg-8">
+            <div class="col-lg-9">
+
                 <div class="card border-0 shadow-sm p-4 p-md-5">
 
-                    <!-- Encabezado del Formulario -->
-                    <div class="mb-4">
-                        <span class="text-uppercase text-muted small fw-bold">Registro</span>
-                        <h1 class="h3 fw-bold text-dark mt-1">Completa tu perfil</h1>
-                        <p class="text-secondary small">Agrega tus datos profesionales y la información de tu clínica. Puedes editar más adelante desde tu panel de control.</p>
-                    </div>
 
-                    <!-- Formulario de Registro de Médico -->
-                    <form id="formRegistroMedico">
+                    <!-- PANTALLA 1: SELECCIÓN DE CUENTA -->
 
-                        <h6 class="fw-bold text-success mb-3">👤 Datos Personales y Profesionales</h6>
 
-                        <div class="row g-3 mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label small text-muted">Nombre</label>
-                                <input type="text" class="form-control" id="nombre" placeholder="Ej. Ana" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label small text-muted">Apellidos</label>
-                                <input type="text" class="form-control" id="apellidos" placeholder="Ej. Gómez" required>
-                            </div>
+                    <section id="pantallaSeleccion">
+
+                        <div class="mb-4">
+                            <h1 class="h4 fw-bold text-success">
+                                Registro de cuenta · vitaGo
+                            </h1>
+
+                            <p class="text-secondary mt-3 mb-0">
+                                ¿Qué tipo de cuenta deseas crear?
+                            </p>
                         </div>
 
-                        <div class="row g-3 mb-3">
+                        <div class="row g-3">
+
+                            <!-- PACIENTE -->
                             <div class="col-md-6">
-                                <label class="form-label small text-muted">Especialidad</label>
-                                <select class="form-select" id="especialidad" required>
-                                    <option value="" selected disabled>Selecciona especialidad</option>
-                                    <option value="Cardiología">Cardiología</option>
-                                    <option value="Neurología">Neurología</option>
-                                    <option value="Oftalmología">Oftalmología</option>
-                                    <option value="Ortopedia">Ortopedia</option>
-                                    <option value="Neumología">Neumología</option>
-                                </select>
+
+                                <button type="button"
+                                        class="tipo-cuenta-card card-paciente text-center"
+                                        onclick="seleccionarCuenta('usuario')">
+
+                                    <div class="tipo-cuenta-icon">
+                                        <i class="bi bi-person"></i>
+                                    </div>
+
+                                    <div class="tipo-cuenta-titulo">
+                                        Paciente
+                                    </div>
+
+                                    <div class="tipo-cuenta-descripcion">
+                                        Registro básico
+                                    </div>
+
+                                </button>
+
                             </div>
+
+                            <!-- MÉDICO -->
                             <div class="col-md-6">
-                                <label class="form-label small text-muted">Cédula Profesional</label>
-                                <input type="text" class="form-control" id="cedula" placeholder="Ej. 123456" required>
+
+                                <button type="button"
+                                        class="tipo-cuenta-card card-medico text-center"
+                                        onclick="seleccionarCuenta('medico')">
+
+                                    <div class="tipo-cuenta-icon">
+                                        <i class="bi bi-heart-pulse"></i>
+                                    </div>
+
+                                    <div class="tipo-cuenta-titulo">
+                                        Médico
+                                    </div>
+
+                                    <div class="tipo-cuenta-descripcion">
+                                        Registro profesional
+                                    </div>
+
+                                </button>
+
                             </div>
+
                         </div>
 
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label class="form-label small text-muted">Teléfono</label>
-                                <input type="tel" class="form-control" id="telefono" placeholder="+52 (773) 000-1567" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label small text-muted">Correo Electrónico</label>
-                                <input type="email" class="form-control" id="correo" placeholder="correo@vitago.com" required>
-                            </div>
+                        <p class="text-center small text-muted mt-4 mb-0">
+                            ¿Ya tienes cuenta? <a href="login.html" class="text-success fw-semibold">Inicia sesión</a>
+                        </p>
+
+                    </section>
+
+
+
+                    <!-- PANTALLA 2: FORMULARIO -->
+
+
+                    <section id="pantallaFormulario" class="oculto">
+
+                        <!-- Regresar -->
+                        <button type="button"
+                                class="btn-regresar"
+                                onclick="regresarSeleccion()">
+
+                            <i class="bi bi-arrow-left"></i>
+                            Cambiar tipo de cuenta
+
+                        </button>
+
+                        <!-- Encabezado dinámico -->
+                        <div class="mb-4">
+
+                            <span class="text-uppercase text-muted small fw-bold">
+                                Registro
+                            </span>
+
+                            <h1 class="h3 fw-bold text-dark mt-1"
+                                id="tituloFormulario">
+
+                                Crear cuenta
+
+                            </h1>
+
+                            <p class="text-secondary small"
+                               id="descripcionFormulario">
+
+                                Completa tus datos para crear tu cuenta en vitaGo.
+
+                            </p>
+
                         </div>
 
-                        <hr class="my-4 text-muted opacity-25">
 
-                        <h6 class="fw-bold text-success mb-3">🏥 Consultorio y Horarios</h6>
+                        <!-- Mensajes de error / avisos (en vez de alert) -->
+                        <div id="mensajeRegistro" class="alert d-none" role="alert"></div>
 
-                        <div class="row g-3 mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label small text-muted">Nombre del Consultorio / Clínica</label>
-                                <input type="text" class="form-control" id="consultorio" placeholder="Ej. Clínica Médica Tula" required>
+                        <!-- FORMULARIO
+                             Paciente: POST /api/Pacientes (sp_registrarPaciente) + login automático
+                             Médico:   POST /api/doctores  (sp_crearDoctor, queda pendiente de aprobación) -->
+                        <form id="formRegistro" novalidate>
+
+                            <!-- Tipo seleccionado oculto -->
+                            <input type="hidden" id="tipoUsuario">
+
+
+                            <!-- DATOS PERSONALES -->
+                            <h6 class="fw-bold text-success mb-3">
+                                <i class="bi bi-person-circle"></i>
+                                Datos personales
+                            </h6>
+
+                            <div class="row g-3 mb-3">
+
+                                <div class="col-md-6">
+
+                                    <label for="nombre" class="form-label small text-muted">
+                                        Nombre
+                                    </label>
+
+                                    <input type="text"
+                                           class="form-control"
+                                           id="nombre"
+                                           placeholder="Ej. Ana"
+                                           autocomplete="given-name"
+                                           maxlength="80"
+                                           required>
+
+                                </div>
+
+                                <div class="col-md-6">
+
+                                    <label for="apellidos" class="form-label small text-muted">
+                                        Apellidos
+                                    </label>
+
+                                    <input type="text"
+                                           class="form-control"
+                                           id="apellidos"
+                                           placeholder="Ej. Gómez López"
+                                           autocomplete="family-name"
+                                           maxlength="120"
+                                           required>
+
+                                </div>
+
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label small text-muted">Dirección</label>
-                                <input type="text" class="form-control" id="direccion" placeholder="Street, Col., ZIP" required>
-                            </div>
-                        </div>
 
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label class="form-label small text-muted">Ciudad</label>
-                                <input type="text" class="form-control" id="ciudad" placeholder="Tula de Allende" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label small text-muted">Horarios de atención</label>
-                                <input type="text" class="form-control" id="horarios" placeholder="Lunes a Viernes 09:00 - 15:00" required>
-                            </div>
-                        </div>
 
-                        <!-- Botón de Envío -->
-                        <div class="d-grid gap-2 mt-4">
-                            <button type="submit" class="btn btn-success btn-lg py-2 fw-bold text-white shadow-sm rounded-pill">Registrar Médico</button>
-                        </div>
+                            <div class="row g-3 mb-3">
 
-                    </form>
+                                <div class="col-md-6">
+
+                                    <label for="telefono" class="form-label small text-muted">
+                                        Teléfono
+                                    </label>
+
+                                    <input type="tel"
+                                           class="form-control"
+                                           id="telefono"
+                                           placeholder="7710000000"
+                                           autocomplete="tel"
+                                           maxlength="20">
+
+                                </div>
+
+                                <div class="col-md-6">
+
+                                    <label for="correo" class="form-label small text-muted">
+                                        Correo electrónico
+                                    </label>
+
+                                    <input type="email"
+                                           class="form-control"
+                                           id="correo"
+                                           placeholder="correo@ejemplo.com"
+                                           autocomplete="email"
+                                           required>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- CONTRASEÑAS -->
+                            <div class="row g-3 mb-4">
+
+                                <div class="col-md-6">
+
+                                    <label for="contrasena" class="form-label small text-muted">
+                                        Contraseña
+                                    </label>
+
+                                    <input type="password"
+                                           class="form-control"
+                                           id="contrasena"
+                                           minlength="8"
+                                           maxlength="72"
+                                           autocomplete="new-password"
+                                           placeholder="Crea una contraseña"
+                                           required>
+
+                                    <small class="text-muted">
+                                        Mínimo 8 caracteres.
+                                    </small>
+
+                                </div>
+
+                                <div class="col-md-6">
+
+                                    <label for="confirmarContrasena" class="form-label small text-muted">
+                                        Confirmar contraseña
+                                    </label>
+
+                                    <input type="password"
+                                           class="form-control"
+                                           id="confirmarContrasena"
+                                           minlength="8"
+                                           autocomplete="new-password"
+                                           placeholder="Confirma tu contraseña"
+                                           required>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- ================================= -->
+                            <!-- DATOS EXCLUSIVOS DEL MÉDICO -->
+                            <!-- ================================= -->
+
+                            <div id="datosMedico" class="oculto">
+
+                                <hr class="my-4">
+
+                                <h6 class="fw-bold text-success mb-3">
+                                    <i class="bi bi-hospital"></i>
+                                    Información profesional
+                                </h6>
+
+
+                                <!-- ESPECIALIDAD Y CÉDULA -->
+                                <div class="row g-3 mb-3">
+
+                                    <div class="col-md-6">
+
+                                        <label for="especialidad" class="form-label small text-muted">
+                                            Especialidad
+                                        </label>
+
+                                        <select class="form-select" id="especialidad">
+
+                                            <option value="" selected disabled>
+                                                Selecciona especialidad
+                                            </option>
+
+                                            <option value="Medicina General">Medicina General</option>
+                                            <option value="Cardiología">Cardiología</option>
+                                            <option value="Neurología">Neurología</option>
+                                            <option value="Oftalmología">Oftalmología</option>
+                                            <option value="Ortopedia">Ortopedia</option>
+                                            <option value="Neumología">Neumología</option>
+                                            <option value="Dermatología">Dermatología</option>
+                                            <option value="Pediatría">Pediatría</option>
+                                            <option value="Ginecología">Ginecología</option>
+                                            <option value="Psiquiatría">Psiquiatría</option>
+                                            <option value="Odontología">Odontología</option>
+                                            <option value="Urología">Urología</option>
+                                            <option value="Endocrinología">Endocrinología</option>
+                                            <option value="Gastroenterología">Gastroenterología</option>
+                                            <option value="Oncología">Oncología</option>
+                                            <option value="Nutrición">Nutrición</option>
+                                            <option value="Traumatología">Traumatología</option>
+                                            <option value="Reumatología">Reumatología</option>
+                                            <option value="Alergología">Alergología</option>
+
+                                        </select>
+
+                                    </div>
+
+                                    <div class="col-md-6">
+
+                                        <label for="cedula" class="form-label small text-muted">
+                                            Cédula profesional
+                                        </label>
+
+                                        <input type="text"
+                                               class="form-control"
+                                               id="cedula"
+                                               maxlength="20"
+                                               placeholder="Número de cédula">
+
+                                    </div>
+
+                                </div>
+
+                                <div class="row g-3 mb-3">
+
+                                    <div class="col-md-6">
+
+                                        <label for="precio" class="form-label small text-muted">
+                                            Precio de consulta (MXN)
+                                        </label>
+
+                                        <input type="number"
+                                               class="form-control"
+                                               id="precio"
+                                               min="0"
+                                               max="100000"
+                                               step="0.01"
+                                               placeholder="Ej. 600">
+
+                                    </div>
+
+                                    <div class="col-md-6 d-flex align-items-end">
+
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" id="consultaOnline">
+                                            <label class="form-check-label small" for="consultaOnline">También doy videoconsultas</label>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- CONSULTORIO -->
+                                <hr class="my-4">
+
+                                <h6 class="fw-bold text-success mb-3">
+                                    <i class="bi bi-building"></i>
+                                    Consultorio y horarios
+                                </h6>
+
+
+                                <div class="row g-3 mb-3">
+
+                                    <div class="col-md-6">
+
+                                        <label for="consultorio" class="form-label small text-muted">
+                                            Consultorio / Clínica
+                                        </label>
+
+                                        <input type="text"
+                                               class="form-control"
+                                               id="consultorio"
+                                               maxlength="120"
+                                               placeholder="Nombre del consultorio">
+
+                                    </div>
+
+                                    <div class="col-md-6">
+
+                                        <label for="direccion" class="form-label small text-muted">
+                                            Dirección
+                                        </label>
+
+                                        <input type="text"
+                                               class="form-control"
+                                               id="direccion"
+                                               maxlength="200"
+                                               placeholder="Calle, número y colonia">
+
+                                    </div>
+
+                                </div>
+
+
+                                <div class="row g-3 mb-3">
+
+                                    <div class="col-md-6">
+
+                                        <label for="ciudad" class="form-label small text-muted">
+                                            Ciudad
+                                        </label>
+
+                                        <input type="text"
+                                               class="form-control"
+                                               id="ciudad"
+                                               maxlength="80"
+                                               placeholder="Ej. Tula de Allende">
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- HORARIOS (sp_crearDoctor pide día inicial/final, hora de entrada/salida y duración) -->
+                                <label class="form-label small text-muted">
+                                    Horarios de atención
+                                </label>
+
+                                <div class="row g-2 mb-3 align-items-center" id="horarios">
+
+                                    <div class="col-6 col-md-3">
+                                        <select class="form-select" id="diaInicio" aria-label="Desde el día">
+                                            <option value="1" selected>Lunes</option><option value="2">Martes</option><option value="3">Miércoles</option>
+                                            <option value="4">Jueves</option><option value="5">Viernes</option><option value="6">Sábado</option><option value="7">Domingo</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-6 col-md-3">
+                                        <select class="form-select" id="diaFin" aria-label="Hasta el día">
+                                            <option value="1">Lunes</option><option value="2">Martes</option><option value="3">Miércoles</option>
+                                            <option value="4">Jueves</option><option value="5" selected>Viernes</option><option value="6">Sábado</option><option value="7">Domingo</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-4 col-md-2">
+                                        <input type="time" class="form-control" id="horaInicio" value="09:00" aria-label="Hora de entrada">
+                                    </div>
+
+                                    <div class="col-4 col-md-2">
+                                        <input type="time" class="form-control" id="horaFin" value="15:00" aria-label="Hora de salida">
+                                    </div>
+
+                                    <div class="col-4 col-md-2">
+                                        <select class="form-select" id="duracion" aria-label="Duración de cada cita">
+                                            <option value="20">20 min</option><option value="30" selected>30 min</option>
+                                            <option value="45">45 min</option><option value="60">60 min</option>
+                                        </select>
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- AVISO -->
+                            <div class="alert alert-light border small mt-4">
+
+                                <i class="bi bi-info-circle text-success"></i>
+
+                                Verifica que la información ingresada sea correcta
+                                antes de crear tu cuenta.
+
+                            </div>
+
+
+                            <!-- BOTÓN REGISTRAR -->
+                            <div class="d-grid gap-2 mt-4">
+
+                                <button type="submit"
+                                        id="btnRegistrar"
+                                        class="btn btn-success btn-lg py-2 fw-bold text-white shadow-sm rounded-pill">
+
+                                    Crear cuenta
+
+                                </button>
+
+                            </div>
+
+                        </form>
+
+                    </section>
 
                 </div>
+
             </div>
         </div>
 
-        <!-- Footer -->
+
+        <!-- FOOTER -->
         <footer class="vg-footer text-center py-4 mt-4">
-            <p class="vg-footer-brand mb-1">vitaGo</p>
-            <p class="vg-footer-copy text-muted small">© 2026 vitaGo Inc. • Medical appointment platform</p>
+
+            <p class="vg-footer-brand mb-1">
+                vitaGo
+            </p>
+
+            <p class="vg-footer-copy text-muted small">
+                © 2026 vitaGo Inc. • Medical appointment platform
+            </p>
+
         </footer>
 
-    </div>
+    </main>
 
-    <!-- Script del Navbar Dinámico -->
-    <script src="/js/navbar.js"></script>
 
-    <!-- Script de conexión con la API -->
-    <script>
-        document.getElementById("formRegistroMedico").addEventListener("submit", function(e) {
-            e.preventDefault();
-            alert("¡Datos del médico capturados correctamente! Aquí puedes agregar tu función fetch para enviarlos a la API.");
+    <!-- Sesión y helpers de la API (apiFetch, guardarSesion...) -->
+    <script src="js/auth.js"></script>
+    <!-- Navbar -->
+    <script src="js/navbar.js"></script>
+    <!-- Registro -->
+    <script src="js/registro.js"></script>
 
-            // Ejemplo de estructura fetch posterior:
-            // let formData = {
-            //     nombre: document.getElementById("nombre").value,
-            //     apellidos: document.getElementById("apellidos").value
-            //     // ... etc
-            // };
-        });
-    </script>
+
 </body>
 </html>

@@ -17,6 +17,7 @@ const menuHTML = `
             <a href="index.html">Inicio</a>
             <a href="index.html#medicos">Doctores</a>
             <a href="index.html#especialidades">Especialidades</a>
+            <span id="vg-nav-extra" style="display:contents;"></span>
         </div>
 
         <!-- Botones de sesión (se rellenan según si el usuario inició sesión) -->
@@ -58,10 +59,25 @@ function pintarSesionNavbar() {
 
     const nombre = (sesion.nombre && sesion.nombre.trim()) || (sesion.correo || "").split("@")[0];
 
+    // Links extra según el rol
+    const extra = document.getElementById("vg-nav-extra");
+    if (extra) {
+        if (sesion.rol === "paciente") extra.innerHTML = '<a href="dashboard.html">Mis citas</a>';
+        if (sesion.rol === "admin") extra.innerHTML = '<a href="doctores.html">Administrar médicos</a>';
+    }
+
+    // El nombre lleva al perfil que corresponde a cada rol
+    const destinos = {
+        paciente: "editar-perfil.html",
+        medico: sesion.perfilId ? `perfil-medico.html?id=${encodeURIComponent(sesion.perfilId)}` : "index.html",
+        admin: "doctores.html"
+    };
+
     const chip = document.createElement("a");
-    chip.href = "editar-perfil.html";
+    chip.href = destinos[sesion.rol] ?? "editar-perfil.html";
     chip.title = "Ver mi perfil";
-    chip.style.cssText = "background:#fff; color:#0f172a; border:1px solid #e2e8f0; border-radius:20px; font-weight:600; padding:6px 16px; font-size:14px; text-decoration:none;";    chip.textContent = "👤 " + nombre; // textContent evita inyectar HTML
+    chip.style.cssText = "background:#fff; color:#0f172a; border:1px solid #e2e8f0; border-radius:20px; font-weight:600; padding:6px 16px; font-size:14px; text-decoration:none;";
+    chip.textContent = "👤 " + nombre; // textContent evita inyectar HTML
 
     const salir = document.createElement("button");
     salir.type = "button";

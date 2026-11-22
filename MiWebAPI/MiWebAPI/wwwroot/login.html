@@ -69,7 +69,7 @@
                                 <label for="correo" class="form-label">Email</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                                    <input id="correo" type="email" class="form-control" value="admin@demo.com" placeholder="correo@correo" required autocomplete="username">
+                                    <input id="correo" type="email" class="form-control" placeholder="correo@ejemplo.com" required autocomplete="username">
                                 </div>
                             </div>
 
@@ -78,7 +78,7 @@
                                 <label for="password" class="form-label">Password</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                                    <input id="password" type="password" class="form-control" value="Admin123*" placeholder="admin123*" required autocomplete="current-password">
+                                    <input id="password" type="password" class="form-control" placeholder="Tu contraseña" required autocomplete="current-password">
                                     <button id="btnVerPassword" type="button" class="input-group-text" style="border-left: none; cursor: pointer;" aria-label="Mostrar contraseña" title="Mostrar contraseña"><i class="bi bi-eye"></i></button>
                                 </div>
                             </div>
@@ -89,7 +89,7 @@
                                     <input class="form-check-input" type="checkbox" id="recordar">
                                     <label class="form-check-label" for="recordar" style="font-size: 0.8rem; color: #6c757d;">Recordar usuario</label>
                                 </div>
-                                <a href="#" style="font-size: 0.8rem; color: #0e5a35; text-decoration: none;">¿Forgot password?</a>
+                                <a href="#" id="lnkOlvide" style="font-size: 0.8rem; color: #0e5a35; text-decoration: none;">¿Olvidaste tu contraseña?</a>
                             </div>
 
                             <!-- Botón Sign in -->
@@ -107,12 +107,12 @@
                             <!-- Botones Sociales -->
                             <div class="row g-2 mb-4">
                                 <div class="col-6">
-                                    <button type="button" class="btn btn-outline-custom w-100 d-flex justify-content-center align-items-center gap-2">
+                                    <button type="button" data-social="Google" class="btn btn-outline-custom w-100 d-flex justify-content-center align-items-center gap-2">
                                         <i class="bi bi-google"></i> Google
                                     </button>
                                 </div>
                                 <div class="col-6">
-                                    <button type="button" class="btn btn-outline-custom w-100 d-flex justify-content-center align-items-center gap-2">
+                                    <button type="button" data-social="Apple" class="btn btn-outline-custom w-100 d-flex justify-content-center align-items-center gap-2">
                                         <i class="bi bi-apple"></i> Apple
                                     </button>
                                 </div>
@@ -120,7 +120,7 @@
 
                             <!-- Link Sign up -->
                             <p class="text-center mb-0" style="font-size: 0.85rem; color: #6c757d;">
-                                ¿No tienes cuenta? <a href="#" class="signup-link">Sign up</a>
+                                ¿No tienes cuenta? <a href="registro-medico.html" class="signup-link">Regístrate</a>
                             </p>
                         </form>
                     </div>

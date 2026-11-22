@@ -12,9 +12,44 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
+    // Tarjetas de especialidad: al dar clic se busca esa especialidad
+    document.querySelectorAll("[data-especialidad]").forEach((tarjeta) => {
+        const buscar = () => buscarPorEspecialidad(tarjeta.dataset.especialidad);
+        tarjeta.style.cursor = "pointer";
+        tarjeta.addEventListener("click", buscar);
+        tarjeta.addEventListener("keydown", (e) => { if (e.key === "Enter") buscar(); });
+    });
+
+    // "Ver todas" las especialidades
+    document.getElementById("lnkVerEspecialidades")?.addEventListener("click", (e) => {
+        e.preventDefault();
+        const caja = document.getElementById("todasEspecialidades");
+        const abierta = !caja.classList.contains("d-none");
+        caja.classList.toggle("d-none", abierta);
+        e.currentTarget.textContent = abierta ? "Ver todas" : "Ocultar";
+    });
+
+    // "Ver todos los médicos": quita los filtros
+    document.getElementById("lnkVerTodosMedicos")?.addEventListener("click", (e) => {
+        e.preventDefault();
+        document.getElementById("buscarCiudad").value = "";
+        document.getElementById("buscarEspecialidad").value = "";
+        buscarMedicos();
+    });
+
+    // La fecha no puede ser anterior a hoy
+    const hoy = new Date();
+    document.getElementById("buscarFecha").min =
+        `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, "0")}-${String(hoy.getDate()).padStart(2, "0")}`;
+
     // Al entrar se muestran todos los médicos (búsqueda sin filtros)
     buscarMedicos({ desplazar: false });
 });
+
+function buscarPorEspecialidad(especialidad) {
+    document.getElementById("buscarEspecialidad").value = especialidad;
+    buscarMedicos();
+}
 
 // ---------- Saludo (auth.js define obtenerUsuario y saludoSegunHora) ----------
 function mostrarSaludo() {
@@ -40,6 +75,20 @@ async function cargarEspecialidades() {
         lista.innerHTML = especialidades
             .map((e) => `<option value="${escaparHtml(e.nombre)}"></option>`)
             .join("");
+
+        // Chips con todas las especialidades (para "Ver todas")
+        const caja = document.getElementById("todasEspecialidades");
+        if (caja) {
+            caja.replaceChildren(...especialidades.map((e) => {
+                const chip = document.createElement("button");
+                chip.type = "button";
+                chip.className = "btn btn-sm btn-outline-success rounded-pill px-3";
+                chip.textContent = e.nombre;
+                chip.title = e.descripcion ?? "";
+                chip.addEventListener("click", () => buscarPorEspecialidad(e.nombre));
+                return chip;
+            }));
+        }
     } catch {
         // Si falla, el campo sigue funcionando como texto libre
     }
@@ -134,14 +183,4 @@ function agendarCita(medicoId, fecha = "") {
     const parametros = new URLSearchParams({ medico: medicoId });
     if (fecha) parametros.set("fecha", fecha);
     window.location.href = `agendar-cita.html?${parametros}`;
-}
-
-// Evita que un texto de la BD se interprete como HTML
-function escaparHtml(valor) {
-    return String(valor ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
 }

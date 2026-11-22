@@ -1,0 +1,72 @@
+﻿/* Contenedor principal */
+.registro-container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+/* Tarjetas de selección */
+.tipo-cuenta-card {
+    border: none;
+    border-radius: 20px;
+    padding: 28px 20px;
+    width: 100%;
+    min-height: 150px;
+    transition: all 0.25s ease;
+    cursor: pointer;
+}
+
+    .tipo-cuenta-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+
+    .tipo-cuenta-card:focus-visible {
+        outline: 3px solid #10b981;
+        outline-offset: 3px;
+    }
+
+.card-paciente {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.card-medico {
+    background: #ecfdf5;
+    color: #059669;
+}
+
+.tipo-cuenta-icon {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.tipo-cuenta-titulo {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.tipo-cuenta-descripcion {
+    font-size: 1rem;
+    color: #64748b;
+    margin-top: 5px;
+}
+
+/* Ocultar secciones */
+.oculto {
+    display: none !important;
+}
+
+/* Botón regresar */
+.btn-regresar {
+    border: none;
+    background: transparent;
+    color: #059669;
+    font-weight: 600;
+    padding: 0;
+    margin-bottom: 20px;
+}
+
+    .btn-regresar:hover {
+        color: #047857;
+    }

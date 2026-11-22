@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="es">
 <head>
     <meta charset="utf-8">
@@ -59,39 +59,41 @@
                     <h2 class="vg-h2">Especialidades</h2>
                     <p class="vg-subtle">Explora por categoría y reserva con confianza.</p>
                 </div>
-                <a href="#" class="vg-link">See all</a>
+                <a href="#" id="lnkVerEspecialidades" class="vg-link">Ver todas</a>
             </div>
+            <!-- Todas las especialidades (GET /api/especialidades), se muestran con "Ver todas" -->
+            <div id="todasEspecialidades" class="d-none d-flex flex-wrap gap-2 mb-3"></div>
             <div class="row g-3 vg-specialty-row">
                 <div class="col">
-                    <div class="vg-specialty-card">
+                    <div class="vg-specialty-card" role="button" tabindex="0" data-especialidad="Cardiología" title="Buscar especialistas en Cardiología">
                         <span class="vg-specialty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z" /></svg></span>
                         <h3 class="vg-specialty-title">Cardiología</h3>
                         <p class="vg-specialty-sub">Heart health • Blood pressure</p>
                     </div>
                 </div>
                 <div class="col">
-                    <div class="vg-specialty-card">
+                    <div class="vg-specialty-card" role="button" tabindex="0" data-especialidad="Neurología" title="Buscar especialistas en Neurología">
                         <span class="vg-specialty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z" /><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z" /></svg></span>
                         <h3 class="vg-specialty-title">Neurología</h3>
                         <p class="vg-specialty-sub">Headaches • Sleep • Migraines</p>
                     </div>
                 </div>
                 <div class="col">
-                    <div class="vg-specialty-card">
+                    <div class="vg-specialty-card" role="button" tabindex="0" data-especialidad="Oftalmología" title="Buscar especialistas en Oftalmología">
                         <span class="vg-specialty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg></span>
                         <h3 class="vg-specialty-title">Oftalmología</h3>
                         <p class="vg-specialty-sub">Vision • Contacts • LASIK</p>
                     </div>
                 </div>
                 <div class="col">
-                    <div class="vg-specialty-card">
+                    <div class="vg-specialty-card" role="button" tabindex="0" data-especialidad="Ortopedia" title="Buscar especialistas en Ortopédicos">
                         <span class="vg-specialty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5" /><circle cx="18" cy="18" r="2.5" /><path d="m7.5 7.5 9 9" /></svg></span>
                         <h3 class="vg-specialty-title">Ortopédicos</h3>
                         <p class="vg-specialty-sub">Joints • Back pain • Sports</p>
                     </div>
                 </div>
                 <div class="col">
-                    <div class="vg-specialty-card">
+                    <div class="vg-specialty-card" role="button" tabindex="0" data-especialidad="Neumología" title="Buscar especialistas en Neumología">
                         <span class="vg-specialty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.6 4.6A2 2 0 1 1 11 8H2M12.6 19.4A2 2 0 1 0 14 16H2M17.6 7.6A2 2 0 1 1 19 11H2" /></svg></span>
                         <h3 class="vg-specialty-title">Neumología</h3>
                         <p class="vg-specialty-sub">Breathing • Asthma • COPD</p>
@@ -107,7 +109,7 @@
                     <h2 class="vg-h2">Especialistas cerca de ti</h2>
                     <p id="resultadoBusqueda" class="vg-subtle">Perfiles verificados • Opiniones reales de pacientes.</p>
                 </div>
-                <a href="#" class="vg-link">View all doctors</a>
+                <a href="#" id="lnkVerTodosMedicos" class="vg-link">Ver todos los médicos</a>
             </div>
             <div class="row g-3" id="listaMedicos">
                 <!-- Las tarjetas las genera js/home.js con los resultados de GET /api/doctores/buscar -->
@@ -158,10 +160,10 @@
                 <p class="vg-footer-copy">© 2026 vitaGo Inc. • Medical appointment platform</p>
             </div>
             <div class="vg-footer-links">
-                <a href="#">Privacy</a>
-                <a href="#">Terms</a>
-                <a href="#">Support</a>
-                <a href="#">Contact</a>
+                <a href="legal.html#privacidad">Privacidad</a>
+                <a href="legal.html#terminos">Términos</a>
+                <a href="legal.html#soporte">Soporte</a>
+                <a href="legal.html#contacto">Contacto</a>
             </div>
         </footer>
 
