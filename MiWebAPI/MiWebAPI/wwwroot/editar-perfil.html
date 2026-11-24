@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Editar perfil | vitaGo</title>
+    <title>Mi perfil | vitaGo</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/indexStyles.css">
@@ -20,8 +20,8 @@
 
         <!-- Cabecera de la sección -->
         <header class="mb-4">
-            <h1 class="h3 fw-bold text-dark mb-1">Editar perfil</h1>
-            <p class="text-secondary small">Actualiza tus datos personales y ajusta la seguridad de tu cuenta.</p>
+            <h1 class="h3 fw-bold text-dark mb-1">Perfil</h1>
+            <p class="text-secondary small">Consulta tus datos personales. Para cambiarlos, presiona <strong>Editar</strong>.</p>
         </header>
 
         <!-- Aviso de error (lo muestra js/perfil.js si falla la API) -->
@@ -40,19 +40,12 @@
                         <span class="badge bg-success-subtle text-success border border-success-subtle x-small">✓ Cuenta activa</span>
                     </div>
                 </div>
-                <div>
+                <div class="d-flex gap-2 flex-wrap justify-content-center">
+                    <!-- La foto se elige del dispositivo; js/perfil.js la recorta a 300x300 y la guarda al momento -->
+                    <input id="inpFoto" type="file" accept="image/jpeg,image/png,image/webp" class="d-none">
                     <button type="button" id="btnCambiarFoto" class="btn btn-outline-secondary btn-sm px-3 rounded-pill fw-semibold">📷 Cambiar foto</button>
+                    <button type="button" id="btnQuitarFoto" class="btn btn-link btn-sm text-danger text-decoration-none d-none">Quitar foto</button>
                 </div>
-            </div>
-
-            <!-- Se muestra al dar clic en "Cambiar foto" -->
-            <div id="cajaFoto" class="mt-3 d-none">
-                <label for="inpFotoUrl" class="form-label small text-muted fw-semibold">Enlace (URL) de tu foto</label>
-                <div class="input-group">
-                    <input id="inpFotoUrl" type="url" class="form-control bg-light border-0" maxlength="500" placeholder="https://ejemplo.com/mi-foto.jpg">
-                    <button type="button" id="btnQuitarFoto" class="btn btn-light border">Quitar foto</button>
-                </div>
-                <div class="form-text">Se guarda junto con tus datos al presionar <strong>Guardar cambios</strong>.</div>
             </div>
         </div>
 
@@ -67,10 +60,12 @@
                             <h5 class="fw-bold mb-0">Datos personales</h5>
                             <p class="text-muted small mb-0">Información básica de tu cuenta.</p>
                         </div>
-                        <span class="badge bg-light text-secondary border">Editable</span>
+                        <span id="badgeModo" class="badge bg-light text-secondary border">Solo lectura</span>
                     </div>
 
                     <form id="formPerfil" novalidate>
+                        <!-- Los campos están bloqueados hasta presionar "Editar" -->
+                        <fieldset id="camposPerfil" disabled>
                         <div class="row g-3 mb-3">
                             <div class="col-md-6">
                                 <label for="inpNombre" class="form-label small text-muted fw-semibold">Nombre</label>
@@ -109,9 +104,12 @@
                             </div>
                         </div>
 
+                        </fieldset>
+
                         <div class="d-flex gap-2">
-                            <button type="submit" id="btnGuardar" class="btn btn-success px-4 fw-bold rounded-pill shadow-sm" style="background-color: #10b981; border: none;">Guardar cambios</button>
-                            <button type="button" id="btnCancelar" class="btn btn-light border px-4 rounded-pill fw-semibold text-muted">Cancelar</button>
+                            <button type="button" id="btnEditar" class="btn btn-success px-4 fw-bold rounded-pill shadow-sm" style="background-color: #10b981; border: none;">✏️ Editar</button>
+                            <button type="submit" id="btnGuardar" class="btn btn-success px-4 fw-bold rounded-pill shadow-sm d-none" style="background-color: #10b981; border: none;">Guardar cambios</button>
+                            <button type="button" id="btnCancelar" class="btn btn-light border px-4 rounded-pill fw-semibold text-muted d-none">Cancelar</button>
                         </div>
                     </form>
                 </div>
@@ -140,7 +138,7 @@
                     </div>
 
                     <!-- Formulario para cambiar contraseña (POST /api/auth/cambiar-password) -->
-                    <form id="formPassword" class="d-none mb-4" novalidate>
+                    <form id="formPassword" class="d-none" novalidate>
                         <input id="inpPassActual" type="password" class="form-control bg-light border-0 mb-2" placeholder="Contraseña actual" autocomplete="current-password" required>
                         <input id="inpPassNueva" type="password" class="form-control bg-light border-0 mb-2" placeholder="Nueva contraseña (mínimo 8 caracteres)" autocomplete="new-password" minlength="8" maxlength="72" required>
                         <input id="inpPassConfirmar" type="password" class="form-control bg-light border-0 mb-2" placeholder="Repite la nueva contraseña" autocomplete="new-password" required>
@@ -150,15 +148,6 @@
                         </div>
                     </form>
 
-                    <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded" style="border: 1px solid #e2e8f0;">
-                        <div>
-                            <div class="fw-bold small text-dark">Autenticación en 2 pasos <span class="badge bg-secondary-subtle text-secondary x-small">Próximamente</span></div>
-                            <div class="text-muted x-small">Código adicional al iniciar sesión.</div>
-                        </div>
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" role="switch" disabled title="Disponible en una próxima versión" aria-label="Autenticación en 2 pasos (próximamente)">
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Eliminar cuenta -->

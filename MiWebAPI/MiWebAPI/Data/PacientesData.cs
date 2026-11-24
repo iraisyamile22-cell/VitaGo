@@ -82,7 +82,7 @@ namespace MiWebAPI.Data
                 cmd.Parameters.Add(new SqlParameter("@FechaNacimiento", SqlDbType.Date)
                 { Value = p.FechaNacimiento.HasValue ? p.FechaNacimiento.Value.Date : DBNull.Value });
                 cmd.Parameters.Add(new SqlParameter("@Genero", SqlDbType.NVarChar, 20) { Value = Nulo(p.Genero) });
-                cmd.Parameters.Add(new SqlParameter("@FotoUrl", SqlDbType.NVarChar, 500) { Value = Nulo(p.FotoUrl) });
+                cmd.Parameters.Add(new SqlParameter("@FotoUrl", SqlDbType.NVarChar, -1) { Value = Nulo(p.FotoUrl) }); // NVARCHAR(MAX)
 
                 var numeroError = new SqlParameter("@numeroError", SqlDbType.Int)
                 { Direction = ParameterDirection.Output };

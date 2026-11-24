@@ -1,5 +1,8 @@
 ﻿// Página de inicio: saludo, buscador de médicos (sp_buscarMedicos) y tarjetas de resultados
 const COLORES_AVATAR = ["#DBEAFE", "#FDE68A", "#D1FAE5", "#FCE7F3", "#E9D5FF", "#FED7AA"];
+const MEDICOS_INICIALES = 6;   // cuántas tarjetas se ven antes de "Ver más"
+let medicosEncontrados = [];
+let verTodosMedicos = false;
 
 document.addEventListener("DOMContentLoaded", () => {
     mostrarSaludo();
@@ -14,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Tarjetas de especialidad: al dar clic se busca esa especialidad
     document.querySelectorAll("[data-especialidad]").forEach((tarjeta) => {
-        const buscar = () => buscarPorEspecialidad(tarjeta.dataset.especialidad);
+        const buscar = () => abrirModalEspecialidad(tarjeta.dataset.especialidad);
         tarjeta.style.cursor = "pointer";
         tarjeta.addEventListener("click", buscar);
         tarjeta.addEventListener("keydown", (e) => { if (e.key === "Enter") buscar(); });
@@ -37,18 +40,52 @@ document.addEventListener("DOMContentLoaded", () => {
         buscarMedicos();
     });
 
-    // La fecha no puede ser anterior a hoy
-    const hoy = new Date();
-    document.getElementById("buscarFecha").min =
-        `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, "0")}-${String(hoy.getDate()).padStart(2, "0")}`;
+    llenarFechas();
+
+    // Los desplegables buscan en cuanto cambian
+    document.getElementById("buscarEspecialidad").addEventListener("change", () => buscarMedicos({ desplazar: false }));
+
+    // "Ver más" / "Ver menos" en la lista de médicos
+    document.getElementById("btnVerMasMedicos").addEventListener("click", () => {
+        verTodosMedicos = !verTodosMedicos;
+        pintarMedicos();
+        if (!verTodosMedicos) document.getElementById("medicos").scrollIntoView({ behavior: "smooth" });
+    });
+
+    conectarModalEspecialidad();
 
     // Al entrar se muestran todos los médicos (búsqueda sin filtros)
     buscarMedicos({ desplazar: false });
+
+    // index.html?especialidad=Cardiología abre directo la ventana
+    const especialidadUrl = new URLSearchParams(location.search).get("especialidad");
+    if (especialidadUrl) abrirModalEspecialidad(especialidadUrl);
 });
 
 function buscarPorEspecialidad(especialidad) {
-    document.getElementById("buscarEspecialidad").value = especialidad;
+    seleccionarEspecialidad(especialidad);
     buscarMedicos();
+}
+
+// Elige una especialidad en el desplegable (si no está en la lista, la agrega)
+function seleccionarEspecialidad(nombre) {
+    const select = document.getElementById("buscarEspecialidad");
+    if (nombre && ![...select.options].some((o) => o.value === nombre)) select.add(new Option(nombre, nombre));
+    select.value = nombre ?? "";
+}
+
+// Desplegable de fechas: hoy y los próximos 30 días
+function llenarFechas() {
+    const select = document.getElementById("buscarFecha");
+    const hoy = new Date();
+    for (let i = 0; i <= 30; i++) {
+        const dia = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + i);
+        const valor = `${dia.getFullYear()}-${String(dia.getMonth() + 1).padStart(2, "0")}-${String(dia.getDate()).padStart(2, "0")}`;
+        let texto = dia.toLocaleDateString("es-MX", { weekday: "short", day: "numeric", month: "short" });
+        if (i === 0) texto = `Hoy, ${texto}`;
+        if (i === 1) texto = `Mañana, ${texto}`;
+        select.add(new Option(texto.charAt(0).toUpperCase() + texto.slice(1), valor));
+    }
 }
 
 // ---------- Saludo (auth.js define obtenerUsuario y saludoSegunHora) ----------
@@ -64,17 +101,18 @@ function mostrarSaludo() {
     saludo.classList.remove("d-none");
 }
 
-// ---------- Sugerencias de especialidad (GET /api/especialidades) ----------
+// ---------- Desplegable de especialidades (GET /api/especialidades) ----------
 async function cargarEspecialidades() {
-    const lista = document.getElementById("listaEspecialidades");
-    if (!lista) return;
+    const select = document.getElementById("buscarEspecialidad");
+    if (!select) return;
     try {
         const respuesta = await fetch("/api/especialidades");
         if (!respuesta.ok) return;
         const especialidades = await respuesta.json();
-        lista.innerHTML = especialidades
-            .map((e) => `<option value="${escaparHtml(e.nombre)}"></option>`)
-            .join("");
+        const elegida = select.value;
+        select.replaceChildren(new Option("Todas las especialidades", ""),
+            ...especialidades.map((e) => new Option(e.nombre, e.nombre)));
+        if (elegida) seleccionarEspecialidad(elegida);
 
         // Chips con todas las especialidades (para "Ver todas")
         const caja = document.getElementById("todasEspecialidades");
@@ -85,12 +123,12 @@ async function cargarEspecialidades() {
                 chip.className = "btn btn-sm btn-outline-success rounded-pill px-3";
                 chip.textContent = e.nombre;
                 chip.title = e.descripcion ?? "";
-                chip.addEventListener("click", () => buscarPorEspecialidad(e.nombre));
+                chip.addEventListener("click", () => abrirModalEspecialidad(e.nombre));
                 return chip;
             }));
         }
     } catch {
-        // Si falla, el campo sigue funcionando como texto libre
+        // Si falla, el desplegable se queda solo con "Todas las especialidades"
     }
 }
 
@@ -102,13 +140,14 @@ async function buscarMedicos(opciones = {}) {
 
     // "Tula de Allende, Hgo." -> "Tula de Allende" (el estado no viene en la columna ciudad)
     const ciudad = document.getElementById("buscarCiudad").value.split(",")[0].trim();
-    const especialidad = document.getElementById("buscarEspecialidad").value.trim();
+    const especialidad = document.getElementById("buscarEspecialidad").value;
 
     const parametros = new URLSearchParams();
     if (ciudad) parametros.set("ciudad", ciudad);
     if (especialidad) parametros.set("especialidad", especialidad);
 
-    contenedor.innerHTML = '<p class="vg-subtle">Buscando especialistas...</p>';
+    contenedor.innerHTML = '<p class="vg-subtle vg-grid-completa">Buscando especialistas...</p>';
+    document.getElementById("btnVerMasMedicos").classList.add("d-none");
     if (desplazar) document.getElementById("medicos").scrollIntoView({ behavior: "smooth" });
 
     try {
@@ -119,19 +158,32 @@ async function buscarMedicos(opciones = {}) {
         if (medicos.length === 0) {
             resumen.textContent = "Sin resultados con esos filtros.";
             contenedor.innerHTML = `
-                <div class="col-12">
+                <div class="vg-grid-completa">
                     <p class="vg-subtle mb-0">No encontramos médicos${especialidad ? ` de <strong>${escaparHtml(especialidad)}</strong>` : ""}${ciudad ? ` en <strong>${escaparHtml(ciudad)}</strong>` : ""}. Prueba con otra ciudad o especialidad.</p>
                 </div>`;
             return;
         }
 
-        resumen.textContent = `${medicos.length} ${medicos.length === 1 ? "especialista encontrado" : "especialistas encontrados"} • Perfiles verificados.`;
-        contenedor.innerHTML = medicos.map(tarjetaMedico).join("");
+        resumen.textContent = `${medicos.length} ${medicos.length === 1 ? "especialista encontrado" : "especialistas encontrados"}.`;
+        medicosEncontrados = medicos;
+        verTodosMedicos = false;
+        pintarMedicos();
     } catch (error) {
         console.error(error);
         resumen.textContent = "No fue posible cargar los especialistas.";
-        contenedor.innerHTML = '<p class="vg-subtle">No se pudo conectar con la API. Verifica que el proyecto .NET esté ejecutándose.</p>';
+        contenedor.innerHTML = '<p class="vg-subtle vg-grid-completa">No se pudo conectar con la API. Verifica que el proyecto .NET esté ejecutándose.</p>';
     }
+}
+
+// Pinta las tarjetas (solo las primeras MEDICOS_INICIALES si no se pidió "Ver más")
+function pintarMedicos() {
+    const visibles = verTodosMedicos ? medicosEncontrados : medicosEncontrados.slice(0, MEDICOS_INICIALES);
+    document.getElementById("listaMedicos").innerHTML = visibles.map(tarjetaMedico).join("");
+
+    const boton = document.getElementById("btnVerMasMedicos");
+    const sobran = medicosEncontrados.length - MEDICOS_INICIALES;
+    boton.classList.toggle("d-none", sobran <= 0);
+    boton.textContent = verTodosMedicos ? "Ver menos" : `Ver más (${sobran})`;
 }
 
 function tarjetaMedico(m, i) {
@@ -143,12 +195,10 @@ function tarjetaMedico(m, i) {
     const rating = m.rating != null ? Number(m.rating).toFixed(1) : "Nuevo";
     const lugar = [m.consultorio, m.ciudad].filter(Boolean).join(", ") || "Solo videoconsulta";
     const precio = new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(m.precioConsulta ?? 0);
-    const fecha = document.getElementById("buscarFecha").value;
     const id = encodeURIComponent(m.id);
 
     return `
-    <div class="col-md-4">
-        <div class="vg-doctor-card">
+    <div class="vg-doctor-card">
             <div class="vg-doctor-top">
                 <span class="vg-avatar" style="background:${color};">${escaparHtml(iniciales)}</span>
                 <div class="vg-doctor-meta">
@@ -166,7 +216,7 @@ function tarjetaMedico(m, i) {
                 <span>${precio}${m.consultaOnline ? " • 🎥 Online" : ""}</span>
             </div>
             <div class="vg-doctor-actions">
-                <button type="button" class="vg-btn vg-btn-primary flex-fill" onclick="agendarCita('${id}', '${fecha}')">
+                <button type="button" class="vg-btn vg-btn-primary flex-fill" onclick="agendarCita('${id}')">
                     <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18M12 14v4M10 16h4" /></svg>
                     Agenda
                 </button>
@@ -175,12 +225,75 @@ function tarjetaMedico(m, i) {
                     Ver perfil
                 </a>
             </div>
-        </div>
     </div>`;
 }
 
-function agendarCita(medicoId, fecha = "") {
+function agendarCita(medicoId) {
+    // La fecha se lee al momento del clic (pudo cambiar después de pintar las tarjetas)
+    const fecha = document.getElementById("buscarFecha").value;
     const parametros = new URLSearchParams({ medico: medicoId });
     if (fecha) parametros.set("fecha", fecha);
     window.location.href = `agendar-cita.html?${parametros}`;
+}
+
+// ---------- Ventana: médicos de una especialidad ----------
+let especialidadModal = "";
+let elementoAntesDelModal = null;
+
+function conectarModalEspecialidad() {
+    const modal = document.getElementById("modalEspecialidad");
+    if (!modal) return;
+    modal.querySelectorAll("[data-cerrar-modal]").forEach((el) => el.addEventListener("click", cerrarModalEspecialidad));
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && !modal.hidden) cerrarModalEspecialidad();
+    });
+    // "Ver en el buscador": aplica el filtro a la lista principal
+    document.getElementById("modalEspVerBuscador").addEventListener("click", () => {
+        cerrarModalEspecialidad();
+        buscarPorEspecialidad(especialidadModal);
+    });
+}
+
+async function abrirModalEspecialidad(especialidad) {
+    const modal = document.getElementById("modalEspecialidad");
+    const lista = document.getElementById("modalEspLista");
+    const resumen = document.getElementById("modalEspResumen");
+    especialidadModal = especialidad;
+    elementoAntesDelModal = document.activeElement;
+
+    document.getElementById("modalEspTitulo").textContent = especialidad;
+    resumen.textContent = "Buscando especialistas...";
+    lista.innerHTML = "";
+    modal.hidden = false;
+    document.body.classList.add("vg-modal-abierto");
+    modal.querySelector(".vg-modal-cerrar").focus();
+
+    try {
+        const respuesta = await fetch(`/api/doctores/buscar?especialidad=${encodeURIComponent(especialidad)}`);
+        if (!respuesta.ok) throw new Error(`Error ${respuesta.status}`);
+        const medicos = await respuesta.json();
+        if (especialidadModal !== especialidad) return; // se abrió otra mientras cargaba
+
+        if (medicos.length === 0) {
+            resumen.textContent = "Por ahora no hay médicos registrados con esta especialidad.";
+            lista.innerHTML = `
+                <div class="vg-grid-completa text-center py-4">
+                    <p class="vg-subtle mb-3">¿Eres especialista en ${escaparHtml(especialidad)}? Regístrate y aparece aquí.</p>
+                    <a href="registro-medico.html?tipo=medico" class="vg-btn vg-btn-primary d-inline-flex">Registrarme como médico</a>
+                </div>`;
+            return;
+        }
+
+        resumen.textContent = `${medicos.length} ${medicos.length === 1 ? "especialista disponible" : "especialistas disponibles"}`;
+        lista.innerHTML = medicos.map(tarjetaMedico).join("");
+    } catch (error) {
+        console.error(error);
+        resumen.textContent = "No se pudo conectar con la API. Verifica que el proyecto .NET esté ejecutándose.";
+    }
+}
+
+function cerrarModalEspecialidad() {
+    document.getElementById("modalEspecialidad").hidden = true;
+    document.body.classList.remove("vg-modal-abierto");
+    elementoAntesDelModal?.focus?.();
 }

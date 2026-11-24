@@ -2,7 +2,7 @@
 // Requiere js/auth.js (apiFetch, guardarSesion, escaparHtml).
 //   Paciente: POST /api/Pacientes (sp_registrarPaciente) -> POST /api/Auth/login
 //             -> PUT /api/Pacientes/perfil para guardar el teléfono (sp_editarPaciente)
-//   Médico:   POST /api/doctores (sp_crearDoctor). Queda "pendiente" hasta que un admin lo apruebe.
+//   Médico:   POST /api/doctores (sp_crearDoctor). Se aprueba solo y aparece de inmediato en el catálogo.
 // También acepta registro-medico.html?tipo=paciente  o  ?tipo=medico  para abrir directo el formulario.
 
 const pantallaSeleccion = document.getElementById("pantallaSeleccion");

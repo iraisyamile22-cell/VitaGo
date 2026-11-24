@@ -19,7 +19,9 @@ namespace MiWebAPI.Models
         [StringLength(20)]
         public string? Genero { get; set; }
 
-        [StringLength(500)]
+        // Enlace http(s) o imagen subida desde el dispositivo (data:image/jpeg;base64,...)
+        // La página la manda recortada a 300x300 (~40 KB); el límite deja margen.
+        [StringLength(400_000)]
         public string? FotoUrl { get; set; }
     }
 

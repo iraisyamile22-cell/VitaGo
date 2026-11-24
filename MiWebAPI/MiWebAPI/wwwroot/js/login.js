@@ -25,13 +25,9 @@ function avisoLogin(texto, tipo = "info") {
 
 // Mensaje que manda otra página (p. ej. después de registrarse o eliminar la cuenta)
 const avisoInicial = new URLSearchParams(location.search).get("aviso");
-if (avisoInicial === "registro-medico") avisoLogin("¡Registro enviado! Tu perfil de médico quedará visible cuando un administrador lo apruebe. Ya puedes iniciar sesión.", "success");
+if (avisoInicial === "registro-medico") avisoLogin("¡Registro completado! Tu perfil de médico ya aparece en el catálogo de vitaGo. Inicia sesión para entrar.", "success");
 if (avisoInicial === "cuenta-eliminada") avisoLogin("Tu cuenta fue eliminada. Gracias por usar vitaGo.", "secondary");
 
-document.getElementById("lnkOlvide").addEventListener("click", (e) => {
-    e.preventDefault();
-    avisoLogin("Para restablecer tu contraseña escribe a soporte@vitago.com desde el correo con el que te registraste y te ayudaremos.", "info");
-});
 document.querySelectorAll("[data-social]").forEach((boton) => {
     boton.addEventListener("click", () =>
         avisoLogin(`El acceso con ${boton.dataset.social} todavía no está disponible. Por ahora entra con tu correo y contraseña.`, "info"));

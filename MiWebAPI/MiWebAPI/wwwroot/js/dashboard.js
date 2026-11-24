@@ -3,6 +3,7 @@
 const usuarioPanel = requerirSesion("paciente");
 const CITAS_INICIALES = 5;
 let citas = [];
+let citasResenadas = new Set();   // ids de citas que ya calificó (GET /api/citas/resenadas)
 let verTodas = false;
 
 const ETIQUETAS_ESTADO = {
@@ -43,6 +44,9 @@ function esActiva(c) {
 async function cargarCitas() {
     try {
         citas = await apiFetch("/api/citas");
+        try {
+            citasResenadas = new Set((await apiFetch("/api/citas/resenadas")).map((x) => String(x).toLowerCase()));
+        } catch { citasResenadas = new Set(); }   // si falla, solo no se ofrece "Calificar"
     } catch (error) {
         mostrarMensaje(error.message, "danger");
         document.getElementById("subtituloPanel").textContent = "";
@@ -133,6 +137,10 @@ function pintarHistorial() {
     lista.innerHTML = visibles.map((c) => {
         const [estado, clase] = ETIQUETAS_ESTADO[c.estado] ?? [c.estado, "bg-light text-secondary"];
         const fecha = fechaLocal(c.fechaHora).toLocaleDateString("es-MX", { day: "numeric", month: "short", year: "numeric" });
+        const puedeCalificar = c.estado !== "cancelada" && !esFutura(c) && !citasResenadas.has(String(c.id).toLowerCase());
+        const calificar = puedeCalificar
+            ? `<a href="perfil-medico.html?id=${encodeURIComponent(c.medicoId)}&cita=${encodeURIComponent(c.id)}#resena" class="d-block small text-decoration-none fw-semibold mt-1" style="color:#d97706;">⭐ Calificar</a>`
+            : "";
         const cancelar = esActiva(c)
             ? `<a href="#" class="d-block small text-decoration-none text-danger mt-1" data-cancelar="${escaparHtml(c.id)}">Cancelar</a>`
             : "";
@@ -146,6 +154,7 @@ function pintarHistorial() {
                     <span class="text-muted small d-block">${fecha} • ${formatoHora(c.fechaHora)}</span>
                     <span class="badge border ${clase}">${escaparHtml(estado)}</span>
                     <a href="confirmacion.html?id=${encodeURIComponent(c.id)}" class="d-block small text-decoration-none mt-1">Ver comprobante</a>
+                    ${calificar}
                     ${cancelar}
                 </div>
             </div>`;

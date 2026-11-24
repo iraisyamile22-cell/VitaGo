@@ -6,6 +6,9 @@ let ordenResenas = "recientes";
 let mostrarTodas = false;
 
 document.addEventListener("DOMContentLoaded", async () => {
+    const avisoResena = sessionStorage.getItem("vitago_aviso_resena");
+    if (avisoResena) { sessionStorage.removeItem("vitago_aviso_resena"); mostrarAviso(avisoResena); }
+
     const id = new URLSearchParams(location.search).get("id");
     if (!id) {
         mostrarMensaje("No se indicó el médico. Elige uno desde el inicio.", "warning");
@@ -59,7 +62,106 @@ document.addEventListener("DOMContentLoaded", async () => {
         pintarResenas();
     });
     pintarResenas();
+    prepararResena(m.id);
 });
+
+// ---------- Dejar reseña (POST /api/citas/{id}/resena) ----------
+const TEXTO_ESTRELLAS = ["", "Mala", "Regular", "Buena", "Muy buena", "Excelente"];
+let calificacion = 0;
+
+async function prepararResena(medicoId) {
+    const aviso = document.getElementById("resenaAviso");
+    const usuario = obtenerUsuario();
+
+    if (!usuario) {
+        aviso.innerHTML = '¿Ya te atendió? <a href="#" id="lnkLoginResena" class="text-success fw-semibold">Inicia sesión</a> para dejar tu reseña.';
+        aviso.classList.remove("d-none");
+        document.getElementById("lnkLoginResena").addEventListener("click", (e) => { e.preventDefault(); irALogin(); });
+        return;
+    }
+    if (usuario.rol !== "paciente") return;
+
+    let citas, resenadas;
+    try {
+        [citas, resenadas] = await Promise.all([apiFetch("/api/citas"), apiFetch("/api/citas/resenadas")]);
+    } catch {
+        return; // si falla, simplemente no se muestra el formulario
+    }
+
+    const yaCalificadas = new Set(resenadas.map((x) => String(x).toLowerCase()));
+    const conEsteMedico = citas.filter((c) => String(c.medicoId).toLowerCase() === String(medicoId).toLowerCase());
+    const pendientes = conEsteMedico.filter((c) =>
+        c.estado !== "cancelada" && fechaLocal(c.fechaHora) < new Date() && !yaCalificadas.has(String(c.id).toLowerCase()));
+
+    if (pendientes.length === 0) {
+        if (conEsteMedico.some((c) => c.estado !== "cancelada" && fechaLocal(c.fechaHora) >= new Date())) {
+            aviso.textContent = "Podrás dejar tu reseña después de tu cita con este especialista.";
+            aviso.classList.remove("d-none");
+        }
+        return;
+    }
+
+    // Qué cita se califica (si viene ?cita= desde "Mis citas", esa)
+    const pedida = new URLSearchParams(location.search).get("cita")?.toLowerCase();
+    const select = document.getElementById("resenaCita");
+    select.replaceChildren(...pendientes.map((c) =>
+        new Option(`Cita del ${formatoFecha(c.fechaHora)} • ${formatoHora(c.fechaHora)}`, c.id)));
+    if (pedida && pendientes.some((c) => String(c.id).toLowerCase() === pedida))
+        select.value = pendientes.find((c) => String(c.id).toLowerCase() === pedida).id;
+    select.classList.toggle("d-none", pendientes.length === 1);
+    document.getElementById("resenaCitaTexto").textContent = pendientes.length === 1
+        ? `Sobre tu cita del ${formatoFecha(pendientes[0].fechaHora)}.`
+        : "Tienes varias citas sin calificar con este especialista. Elige cuál:";
+
+    document.querySelectorAll(".vg-estrella").forEach((b) => {
+        b.addEventListener("click", () => marcarEstrellas(Number(b.dataset.valor)));
+        b.addEventListener("mouseenter", () => pintarEstrellas(Number(b.dataset.valor)));
+        b.addEventListener("mouseleave", () => pintarEstrellas(calificacion));
+    });
+    const comentario = document.getElementById("resenaComentario");
+    comentario.addEventListener("input", () => {
+        document.getElementById("resenaContador").textContent = comentario.value.length;
+    });
+    document.getElementById("formResena").addEventListener("submit", publicarResena);
+
+    const caja = document.getElementById("resena");
+    caja.classList.remove("d-none");
+    if (location.hash === "#resena") caja.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+function marcarEstrellas(valor) {
+    calificacion = valor;
+    pintarEstrellas(valor);
+    document.getElementById("resenaEtiqueta").textContent = TEXTO_ESTRELLAS[valor];
+}
+
+function pintarEstrellas(valor) {
+    document.querySelectorAll(".vg-estrella").forEach((b) =>
+        b.classList.toggle("activa", Number(b.dataset.valor) <= valor));
+}
+
+async function publicarResena(e) {
+    e.preventDefault();
+    if (!calificacion) {
+        mostrarAviso("Elige de 1 a 5 estrellas antes de publicar.", "warning");
+        return;
+    }
+    const boton = document.getElementById("btnPublicarResena");
+    boton.disabled = true;
+    try {
+        const idCita = document.getElementById("resenaCita").value;
+        const r = await apiFetch(`/api/citas/${encodeURIComponent(idCita)}/resena`, {
+            method: "POST",
+            body: { calificacion, comentario: document.getElementById("resenaComentario").value.trim() || null }
+        });
+        sessionStorage.setItem("vitago_aviso_resena", r?.respuesta || "¡Gracias por tu reseña!");
+        // Se recarga sin ?cita= para ver la reseña publicada y el nuevo promedio
+        location.replace(`perfil-medico.html?id=${encodeURIComponent(new URLSearchParams(location.search).get("id"))}`);
+    } catch (error) {
+        mostrarAviso(error.message, "danger");
+        boton.disabled = false;
+    }
+}
 
 function texto(id, valor) {
     document.getElementById(id).textContent = valor;

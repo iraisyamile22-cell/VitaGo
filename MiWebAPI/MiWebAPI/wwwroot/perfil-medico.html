@@ -77,6 +77,29 @@
                             <button type="button" class="btn btn-outline-secondary" data-orden="mejores">Mejor calificadas</button>
                         </div>
                     </div>
+                    <!-- Dejar reseña (js/perfil-medico.js lo muestra solo si el paciente ya tuvo cita con este médico) -->
+                    <div id="resena" class="d-none mb-4 p-3 rounded border" style="background: rgba(209, 250, 229, 0.35); scroll-margin-top: 110px;">
+                        <form id="formResena" novalidate>
+                            <h6 class="fw-bold mb-1">Deja tu reseña</h6>
+                            <p class="text-muted small mb-2" id="resenaCitaTexto"></p>
+                            <select id="resenaCita" class="form-select form-select-sm mb-2 d-none" aria-label="Cita que quieres calificar"></select>
+                            <div class="mb-2" role="radiogroup" aria-label="Calificación">
+                                <button type="button" class="vg-estrella" data-valor="1" aria-label="1 estrella">★</button>
+                                <button type="button" class="vg-estrella" data-valor="2" aria-label="2 estrellas">★</button>
+                                <button type="button" class="vg-estrella" data-valor="3" aria-label="3 estrellas">★</button>
+                                <button type="button" class="vg-estrella" data-valor="4" aria-label="4 estrellas">★</button>
+                                <button type="button" class="vg-estrella" data-valor="5" aria-label="5 estrellas">★</button>
+                                <span id="resenaEtiqueta" class="small text-muted ms-2">Elige de 1 a 5 estrellas</span>
+                            </div>
+                            <textarea id="resenaComentario" class="form-control form-control-sm mb-2" rows="3" maxlength="1000" placeholder="¿Cómo fue tu consulta? (opcional)"></textarea>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="x-small text-muted"><span id="resenaContador">0</span>/1000</span>
+                                <button type="submit" id="btnPublicarResena" class="btn btn-success btn-sm rounded-pill px-4 fw-semibold" style="background-color: #10b981; border: none;">Publicar reseña</button>
+                            </div>
+                        </form>
+                    </div>
+                    <p id="resenaAviso" class="small text-muted d-none mb-3"></p>
+
                     <div id="listaResenas"></div>
                     <div class="text-center mt-3">
                         <a href="#" id="lnkTodasResenas" class="text-decoration-none small text-success fw-bold d-none">Ver todas las reseñas →</a>
@@ -156,5 +179,10 @@
     <script src="js/auth.js"></script>
     <script src="/js/navbar.js"></script>
     <script src="js/perfil-medico.js"></script>
+    <style>
+        .vg-estrella { border: none; background: none; font-size: 1.6rem; line-height: 1; color: #cbd5e1; padding: 0 2px; cursor: pointer; transition: transform .1s; }
+        .vg-estrella:hover { transform: scale(1.15); }
+        .vg-estrella.activa { color: #f59e0b; }
+    </style>
 </body>
 </html>
