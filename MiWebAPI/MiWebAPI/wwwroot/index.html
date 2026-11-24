@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="es">
 <head>
     <meta charset="utf-8">
@@ -29,17 +29,21 @@
             <label class="vg-field">
                 <svg class="vg-icon" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>
                 <input id="buscarCiudad" type="text" class="vg-field-input" placeholder="Ciudad (ej. Tula de Allende)">
-                <svg class="vg-chevron" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
             </label>
             <label class="vg-field">
                 <svg class="vg-icon" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.8 2.3 3 4.1a3 3 0 0 0 4.2 4.2L9 6.5" /><path d="M12.3 4.8 11 6a3 3 0 0 0 0 4.2l5 5a3 3 0 0 0 4.2 0L21 14" /><path d="m8 8 8 8" /><path d="m2 22 4-4" /></svg>
-                <input id="buscarEspecialidad" type="text" class="vg-field-input" placeholder="Especialidad" list="listaEspecialidades" autocomplete="off">
-                <datalist id="listaEspecialidades"></datalist>
+                <!-- Opciones desde GET /api/especialidades (js/home.js) -->
+                <select id="buscarEspecialidad" class="vg-field-input vg-field-select" aria-label="Especialidad">
+                    <option value="">Todas las especialidades</option>
+                </select>
                 <svg class="vg-chevron" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
             </label>
             <label class="vg-field vg-field-date">
                 <svg class="vg-icon" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>
-                <input id="buscarFecha" type="date" class="vg-field-input" placeholder="Fecha">
+                <!-- Próximos 30 días (js/home.js). Se pasa a agendar-cita.html al dar clic en "Agenda" -->
+                <select id="buscarFecha" class="vg-field-input vg-field-select" aria-label="Fecha">
+                    <option value="">Cualquier fecha</option>
+                </select>
                 <svg class="vg-chevron" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
             </label>
             <button type="button" class="vg-btn vg-btn-primary" onclick="buscarMedicos()" style="height: 56px; padding: 0 2rem;">
@@ -59,39 +63,41 @@
                     <h2 class="vg-h2">Especialidades</h2>
                     <p class="vg-subtle">Explora por categoría y reserva con confianza.</p>
                 </div>
-                <a href="#" class="vg-link">See all</a>
+                <a href="#" id="lnkVerEspecialidades" class="vg-link">Ver todas</a>
             </div>
+            <!-- Todas las especialidades (GET /api/especialidades), se muestran con "Ver todas" -->
+            <div id="todasEspecialidades" class="d-none d-flex flex-wrap gap-2 mb-3"></div>
             <div class="row g-3 vg-specialty-row">
                 <div class="col">
-                    <div class="vg-specialty-card">
+                    <div class="vg-specialty-card" role="button" tabindex="0" data-especialidad="Cardiología" title="Buscar especialistas en Cardiología">
                         <span class="vg-specialty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z" /></svg></span>
                         <h3 class="vg-specialty-title">Cardiología</h3>
                         <p class="vg-specialty-sub">Heart health • Blood pressure</p>
                     </div>
                 </div>
                 <div class="col">
-                    <div class="vg-specialty-card">
+                    <div class="vg-specialty-card" role="button" tabindex="0" data-especialidad="Neurología" title="Buscar especialistas en Neurología">
                         <span class="vg-specialty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z" /><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z" /></svg></span>
                         <h3 class="vg-specialty-title">Neurología</h3>
                         <p class="vg-specialty-sub">Headaches • Sleep • Migraines</p>
                     </div>
                 </div>
                 <div class="col">
-                    <div class="vg-specialty-card">
+                    <div class="vg-specialty-card" role="button" tabindex="0" data-especialidad="Oftalmología" title="Buscar especialistas en Oftalmología">
                         <span class="vg-specialty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg></span>
                         <h3 class="vg-specialty-title">Oftalmología</h3>
                         <p class="vg-specialty-sub">Vision • Contacts • LASIK</p>
                     </div>
                 </div>
                 <div class="col">
-                    <div class="vg-specialty-card">
+                    <div class="vg-specialty-card" role="button" tabindex="0" data-especialidad="Ortopedia" title="Buscar especialistas en Ortopédicos">
                         <span class="vg-specialty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5" /><circle cx="18" cy="18" r="2.5" /><path d="m7.5 7.5 9 9" /></svg></span>
                         <h3 class="vg-specialty-title">Ortopédicos</h3>
                         <p class="vg-specialty-sub">Joints • Back pain • Sports</p>
                     </div>
                 </div>
                 <div class="col">
-                    <div class="vg-specialty-card">
+                    <div class="vg-specialty-card" role="button" tabindex="0" data-especialidad="Neumología" title="Buscar especialistas en Neumología">
                         <span class="vg-specialty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.6 4.6A2 2 0 1 1 11 8H2M12.6 19.4A2 2 0 1 0 14 16H2M17.6 7.6A2 2 0 1 1 19 11H2" /></svg></span>
                         <h3 class="vg-specialty-title">Neumología</h3>
                         <p class="vg-specialty-sub">Breathing • Asthma • COPD</p>
@@ -105,13 +111,16 @@
             <div class="vg-section-head">
                 <div>
                     <h2 class="vg-h2">Especialistas cerca de ti</h2>
-                    <p id="resultadoBusqueda" class="vg-subtle">Perfiles verificados • Opiniones reales de pacientes.</p>
+                    <p id="resultadoBusqueda" class="vg-subtle">Especialistas registrados • Opiniones reales de pacientes.</p>
                 </div>
-                <a href="#" class="vg-link">View all doctors</a>
+                <a href="#" id="lnkVerTodosMedicos" class="vg-link">Ver todos los médicos</a>
             </div>
-            <div class="row g-3" id="listaMedicos">
+            <div class="vg-doctor-grid" id="listaMedicos">
                 <!-- Las tarjetas las genera js/home.js con los resultados de GET /api/doctores/buscar -->
                 <p class="vg-subtle">Cargando especialistas...</p>
+            </div>
+            <div class="text-center mt-4">
+                <button type="button" id="btnVerMasMedicos" class="vg-btn vg-btn-outline d-none mx-auto" style="min-width: 180px;">Ver más</button>
             </div>
         </section>
 
@@ -158,13 +167,35 @@
                 <p class="vg-footer-copy">© 2026 vitaGo Inc. • Medical appointment platform</p>
             </div>
             <div class="vg-footer-links">
-                <a href="#">Privacy</a>
-                <a href="#">Terms</a>
-                <a href="#">Support</a>
-                <a href="#">Contact</a>
+                <a href="legal.html#privacidad">Privacidad</a>
+                <a href="legal.html#terminos">Términos</a>
+                <a href="legal.html#soporte">Soporte</a>
+                <a href="legal.html#contacto">Contacto</a>
             </div>
         </footer>
 
+    </div>
+
+    <!-- VENTANA: médicos de una especialidad (la abre js/home.js al dar clic en una especialidad) -->
+    <div id="modalEspecialidad" class="vg-modal" role="dialog" aria-modal="true" aria-labelledby="modalEspTitulo" hidden>
+        <div class="vg-modal-fondo" data-cerrar-modal></div>
+        <div class="vg-modal-caja" role="document">
+            <div class="vg-modal-encabezado">
+                <div>
+                    <p class="vg-modal-etiqueta mb-1">Especialidad</p>
+                    <h2 id="modalEspTitulo" class="vg-modal-titulo">Especialistas</h2>
+                    <p id="modalEspResumen" class="vg-subtle mb-0"></p>
+                </div>
+                <button type="button" class="vg-modal-cerrar" data-cerrar-modal aria-label="Cerrar">&times;</button>
+            </div>
+            <div class="vg-modal-cuerpo">
+                <div class="vg-doctor-grid" id="modalEspLista"></div>
+            </div>
+            <div class="vg-modal-pie">
+                <button type="button" class="vg-btn vg-btn-outline" data-cerrar-modal>Cerrar</button>
+                <button type="button" class="vg-btn vg-btn-primary" id="modalEspVerBuscador">Ver en el buscador</button>
+            </div>
+        </div>
     </div>
 
     <script src="js/auth.js"></script>

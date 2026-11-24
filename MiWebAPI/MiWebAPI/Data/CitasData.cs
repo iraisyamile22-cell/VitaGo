@@ -151,6 +151,68 @@ namespace MiWebAPI.Data
 
         // ---------- Auxiliares ----------
 
+        // ---------- Reseñas ----------
+
+        // sp_crearResena: solo de una cita propia, ya pasada y no cancelada; una reseña por cita
+        public async Task<RespuestaOperacion> CrearResena(Guid idCita, Guid pacienteId, ResenaCrear r)
+        {
+            try
+            {
+                await using var con = new SqlConnection(_conexion);
+                await using var cmd = new SqlCommand("sp_crearResena", con)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+                cmd.Parameters.Add(new SqlParameter("@IdCita", SqlDbType.UniqueIdentifier) { Value = idCita });
+                cmd.Parameters.Add(new SqlParameter("@PacienteId", SqlDbType.UniqueIdentifier) { Value = pacienteId });
+                cmd.Parameters.Add(new SqlParameter("@Calificacion", SqlDbType.TinyInt) { Value = (byte)r.Calificacion });
+                cmd.Parameters.Add(new SqlParameter("@Comentario", SqlDbType.NVarChar, 1000)
+                { Value = string.IsNullOrWhiteSpace(r.Comentario) ? DBNull.Value : r.Comentario.Trim() });
+
+                var numeroError = new SqlParameter("@numeroError", SqlDbType.Int)
+                { Direction = ParameterDirection.Output };
+                var respuesta = new SqlParameter("@respuesta", SqlDbType.VarChar, 1000)
+                { Direction = ParameterDirection.Output };
+                cmd.Parameters.Add(numeroError);
+                cmd.Parameters.Add(respuesta);
+
+                await con.OpenAsync();
+                await cmd.ExecuteNonQueryAsync();
+
+                return new RespuestaOperacion
+                {
+                    NumeroError = numeroError.Value is int n ? n : 0,
+                    Respuesta = respuesta.Value as string ?? string.Empty
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al ejecutar sp_crearResena");
+                return new RespuestaOperacion
+                {
+                    NumeroError = -1,
+                    Respuesta = "Ocurrió un error al procesar la solicitud"
+                };
+            }
+        }
+
+        // sp_citasResenadas: ids de las citas que el paciente ya calificó
+        public async Task<List<Guid>> CitasResenadas(Guid pacienteId)
+        {
+            var lista = new List<Guid>();
+            await using var con = new SqlConnection(_conexion);
+            await using var cmd = new SqlCommand("sp_citasResenadas", con)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            cmd.Parameters.Add(new SqlParameter("@PacienteId", SqlDbType.UniqueIdentifier) { Value = pacienteId });
+
+            await con.OpenAsync();
+            await using var r = await cmd.ExecuteReaderAsync();
+            while (await r.ReadAsync()) lista.Add(r.GetGuid(0));
+            return lista;
+        }
+
         private static string? Txt(SqlDataReader r, string columna)
         {
             int i = r.GetOrdinal(columna);

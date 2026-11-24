@@ -63,6 +63,54 @@ namespace MiWebAPI.Data
             }
         }
 
+        public async Task<RespuestaOperacion> Editar(Guid pacienteId, PacienteEditar p)
+        {
+            try
+            {
+                await using var con = new SqlConnection(_conexion);
+                await using var cmd = new SqlCommand("sp_editarPaciente", con)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+
+                object Nulo(string? v) => string.IsNullOrWhiteSpace(v) ? DBNull.Value : v.Trim();
+
+                cmd.Parameters.Add(new SqlParameter("@PacienteId", SqlDbType.UniqueIdentifier) { Value = pacienteId });
+                cmd.Parameters.Add(new SqlParameter("@Nombre", SqlDbType.NVarChar, 80) { Value = p.Nombre.Trim() });
+                cmd.Parameters.Add(new SqlParameter("@Apellidos", SqlDbType.NVarChar, 120) { Value = Nulo(p.Apellidos) });
+                cmd.Parameters.Add(new SqlParameter("@Telefono", SqlDbType.NVarChar, 20) { Value = Nulo(p.Telefono) });
+                cmd.Parameters.Add(new SqlParameter("@FechaNacimiento", SqlDbType.Date)
+                { Value = p.FechaNacimiento.HasValue ? p.FechaNacimiento.Value.Date : DBNull.Value });
+                cmd.Parameters.Add(new SqlParameter("@Genero", SqlDbType.NVarChar, 20) { Value = Nulo(p.Genero) });
+                cmd.Parameters.Add(new SqlParameter("@FotoUrl", SqlDbType.NVarChar, -1) { Value = Nulo(p.FotoUrl) }); // NVARCHAR(MAX)
+
+                var numeroError = new SqlParameter("@numeroError", SqlDbType.Int)
+                { Direction = ParameterDirection.Output };
+                var respuesta = new SqlParameter("@respuesta", SqlDbType.VarChar, 1000)
+                { Direction = ParameterDirection.Output };
+                cmd.Parameters.Add(numeroError);
+                cmd.Parameters.Add(respuesta);
+
+                await con.OpenAsync();
+                await cmd.ExecuteNonQueryAsync();
+
+                return new RespuestaOperacion
+                {
+                    NumeroError = numeroError.Value is int n ? n : 0,
+                    Respuesta = respuesta.Value as string ?? string.Empty
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al ejecutar sp_editarPaciente");
+                return new RespuestaOperacion
+                {
+                    NumeroError = -1,
+                    Respuesta = "Ocurrió un error al procesar la solicitud"
+                };
+            }
+        }
+
         public async Task<PacientePerfil?> ObtenerPerfil(Guid pacienteId)
         {
             await using var con = new SqlConnection(_conexion);

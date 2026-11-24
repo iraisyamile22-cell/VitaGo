@@ -32,63 +32,41 @@
             </svg>
         </div>
 
-        <h1 class="confirmation-title">Cita confirmada</h1>
-        <p class="confirmation-subtitle">Hemos reservado tu cita. Puedes ver los detalles abajo y descargar tu comprobante.</p>
+        <h1 class="confirmation-title" id="tituloCita">Cita confirmada</h1>
+        <p class="confirmation-subtitle" id="subtituloCita">Hemos reservado tu cita. Puedes ver los detalles abajo y descargar tu comprobante.</p>
 
-        <!-- Tarjeta de resumen -->
+        <div id="mensaje" class="alert d-none" role="alert" style="max-width: 640px; margin: 0 auto 16px;"></div>
+
+        <!-- Tarjeta de resumen (la llena el script con GET /api/citas/{id}) -->
         <div class="confirmation-card">
             <div class="card-header-confirm">
                 <div>
                     <h2 class="card-title-confirm">Resumen de la cita</h2>
-                    <p class="card-folio">Folio: VG-10492</p>
+                    <p class="card-folio">Folio: <span data-campo="folio">—</span></p>
                 </div>
-                <div class="status-badge">
-                    Confirmada
-                </div>
+                <div class="status-badge" data-campo="estado">—</div>
             </div>
 
-            <!-- Detalles dinámicos -->
             <div class="details-grid">
-                <div class="detail-item">
-                    <span class="detail-label">Folio</span>
-                    <span class="detail-value">VG-10492</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">Estado</span>
-                    <span class="detail-value">Confirmada</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">Paciente</span>
-                    <span class="detail-value">María García</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">Fecha</span>
-                    <span class="detail-value" id="dato-fecha">Cargando...</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">Médico</span>
-                    <span class="detail-value">Dra. Valeria Pérez</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">Hora</span>
-                    <span class="detail-value" id="dato-hora">Cargando...</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">Dirección</span>
-                    <span class="detail-value">Clínica El Country, Bogotá</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">Costo</span>
-                    <span class="detail-value">$120.000 COP</span>
-                </div>
+                <div class="detail-item"><span class="detail-label">Folio</span><span class="detail-value" data-campo="folio">—</span></div>
+                <div class="detail-item"><span class="detail-label">Estado</span><span class="detail-value" data-campo="estado">—</span></div>
+                <div class="detail-item"><span class="detail-label">Paciente</span><span class="detail-value" data-campo="paciente">—</span></div>
+                <div class="detail-item"><span class="detail-label">Fecha</span><span class="detail-value" data-campo="fecha">Cargando...</span></div>
+                <div class="detail-item"><span class="detail-label">Médico</span><span class="detail-value" data-campo="doctor">—</span></div>
+                <div class="detail-item"><span class="detail-label">Hora</span><span class="detail-value" data-campo="hora">Cargando...</span></div>
+                <div class="detail-item"><span class="detail-label">Especialidad</span><span class="detail-value" data-campo="especialidad">—</span></div>
+                <div class="detail-item"><span class="detail-label">Modalidad</span><span class="detail-value" data-campo="modalidad">—</span></div>
+                <div class="detail-item"><span class="detail-label">Dirección</span><span class="detail-value" data-campo="direccion">—</span></div>
+                <div class="detail-item"><span class="detail-label">Costo</span><span class="detail-value" data-campo="costo">—</span></div>
             </div>
 
             <!-- Botones ocultables para el PDF -->
-            <div class="actions-confirm" id="zona-botones">
-                <button class="btn-download" id="btn-descargar">
+            <div class="actions-confirm" id="zona-botones" style="gap: 10px; flex-wrap: wrap;">
+                <button class="btn-download" id="btn-descargar" disabled>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                     Descargar comprobante PDF
                 </button>
+                <a href="dashboard.html" class="btn-download" style="background:#fff; color:#10B981; border:1px solid #10B981; text-decoration:none;">Ver mis citas</a>
             </div>
         </div>
 
@@ -100,50 +78,8 @@
         </a>
     </main>
 
-    <!-- Script para inyectar la Navbar -->
+    <script src="js/auth.js"></script>
     <script src="/js/navbar.js"></script>
-
-    <!-- Script para recuperar datos y descargar PDF -->
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            // 1. RECUPERAR DATOS DE LA MEMORIA (localStorage)
-            const fechaGuardada = localStorage.getItem("cita_fecha");
-            const horaGuardada = localStorage.getItem("cita_hora");
-
-            if (fechaGuardada) {
-                document.getElementById("dato-fecha").textContent = fechaGuardada;
-            } else {
-                document.getElementById("dato-fecha").textContent = "Fecha no seleccionada";
-            }
-
-            if (horaGuardada) {
-                document.getElementById("dato-hora").textContent = horaGuardada + " hrs";
-            } else {
-                document.getElementById("dato-hora").textContent = "--:--";
-            }
-
-            // 2. FUNCIÓN PARA DESCARGAR PDF
-            document.getElementById('btn-descargar').addEventListener('click', () => {
-                const elemento = document.getElementById('comprobante');
-                const zonaBotones = document.getElementById('zona-botones');
-
-                // Ocultar botón antes de imprimir
-                zonaBotones.style.display = 'none';
-
-                const opciones = {
-                    margin: 0.5,
-                    filename: 'Comprobante_Cita_VG-10492.pdf',
-                    image: { type: 'jpeg', quality: 1 },
-                    html2canvas: { scale: 2, useCORS: true },
-                    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-                };
-
-                html2pdf().set(opciones).from(elemento).save().then(() => {
-                    // Mostrar botón nuevamente al terminar
-                    zonaBotones.style.display = 'flex';
-                });
-            });
-        });
-    </script>
+    <script src="js/confirmacion.js"></script>
 </body>
 </html>

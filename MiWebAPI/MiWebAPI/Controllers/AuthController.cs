@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MiWebAPI.Data;
 using MiWebAPI.Models;
@@ -63,6 +63,44 @@ namespace MiWebAPI.Controllers
             Rol = User.FindFirstValue("role"),
             PerfilId = User.FindFirstValue("perfil_id")
         });
+
+        // POST api/auth/cambiar-password  (cualquier rol; pide la contraseña actual)
+        [Authorize]
+        [HttpPost("cambiar-password")]
+        public async Task<IActionResult> CambiarPassword([FromBody] CambiarPasswordRequest req)
+        {
+            if (await UsuarioConPasswordValida(req.PasswordActual) is not UsuarioLogin u)
+                return Unauthorized(new RespuestaOperacion { NumeroError = 401, Respuesta = "La contraseña actual no es correcta" });
+
+            string hash = BCrypt.Net.BCrypt.HashPassword(req.PasswordNueva);
+            RespuestaOperacion resultado = await _authData.CambiarPassword(u.UsuarioId, hash);
+            return resultado.IsSuccess ? Ok(resultado) : BadRequest(resultado);
+        }
+
+        // DELETE api/auth/cuenta  (cualquier rol; baja lógica con sp_eliminarUsuario)
+        [Authorize]
+        [HttpDelete("cuenta")]
+        public async Task<IActionResult> EliminarCuenta([FromBody] EliminarCuentaRequest req)
+        {
+            if (await UsuarioConPasswordValida(req.Password) is not UsuarioLogin u)
+                return Unauthorized(new RespuestaOperacion { NumeroError = 401, Respuesta = "La contraseña no es correcta" });
+
+            RespuestaOperacion resultado = await _authData.EliminarUsuario(u.UsuarioId);
+            return resultado.IsSuccess ? Ok(resultado) : BadRequest(resultado);
+        }
+
+        // Busca al usuario del token y comprueba su contraseña. Null si algo no coincide.
+        private async Task<UsuarioLogin?> UsuarioConPasswordValida(string password)
+        {
+            string? correo = User.FindFirstValue("email");
+            if (string.IsNullOrEmpty(correo) || !Guid.TryParse(User.FindFirstValue("sub"), out Guid usuarioId))
+                return null;
+
+            UsuarioLogin? u = await _authData.ObtenerPorCorreo(correo);
+            if (u is null || u.UsuarioId != usuarioId || u.PasswordHash is null) return null;
+
+            return Verificar(password, u.PasswordHash) ? u : null;
+        }
 
         private static bool Verificar(string password, string hash)
         {

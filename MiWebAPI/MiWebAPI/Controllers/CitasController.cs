@@ -35,6 +35,32 @@ namespace MiWebAPI.Controllers
             return Ok(await _data.MisCitas(pacienteId));
         }
 
+        // GET api/citas/resenadas  -> ids de mis citas que ya califiqué
+        [HttpGet("resenadas")]
+        public async Task<IActionResult> Resenadas()
+        {
+            if (PacienteActual() is not Guid pacienteId) return SesionInvalida();
+
+            return Ok(await _data.CitasResenadas(pacienteId));
+        }
+
+        // POST api/citas/{id}/resena  -> calificar al médico de una cita ya pasada (sp_crearResena)
+        [HttpPost("{id:guid}/resena")]
+        public async Task<IActionResult> Resena(Guid id, [FromBody] ResenaCrear objeto)
+        {
+            if (PacienteActual() is not Guid pacienteId) return SesionInvalida();
+
+            RespuestaOperacion resultado = await _data.CrearResena(id, pacienteId, objeto);
+
+            return resultado.NumeroError switch
+            {
+                0 => Ok(resultado),
+                1 => NotFound(resultado),       // la cita no existe o no es suya
+                4 => Conflict(resultado),       // ya la calificó
+                _ => BadRequest(resultado)
+            };
+        }
+
         // GET api/citas/{id}  -> detalle (pantalla de confirmación)
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> Obtener(Guid id)

@@ -665,3 +665,163 @@ html, body {
         transform: translateY(0);
     }
 }
+
+
+/* =========================================
+   VENTANA DE ESPECIALIDAD (index: médicos de una especialidad)
+   ========================================= */
+body.vg-modal-abierto {
+    overflow: hidden;
+}
+
+.vg-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.vg-modal[hidden] {
+    display: none;
+}
+
+.vg-modal-fondo {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    animation: vg-modal-fade 0.2s ease-out;
+}
+
+.vg-modal-caja {
+    position: relative;
+    width: 100%;
+    max-width: 920px;
+    max-height: calc(100vh - 32px);
+    display: flex;
+    flex-direction: column;
+    background: #f8fafc;
+    border-radius: 20px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25);
+    animation: vg-modal-in 0.25s ease-out;
+}
+
+.vg-modal-encabezado {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 22px 26px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #fff;
+    border-radius: 20px 20px 0 0;
+}
+
+.vg-modal-etiqueta {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #16a34a;
+}
+
+.vg-modal-titulo {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.vg-modal-cerrar {
+    border: none;
+    background: #f1f5f9;
+    color: #334155;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.vg-modal-cerrar:hover {
+    background: #e2e8f0;
+}
+
+.vg-modal-cuerpo {
+    padding: 20px 26px;
+    overflow-y: auto;
+}
+
+.vg-modal-pie {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 14px 26px;
+    border-top: 1px solid #e2e8f0;
+    background: #fff;
+    border-radius: 0 0 20px 20px;
+}
+
+@keyframes vg-modal-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes vg-modal-in {
+    from { opacity: 0; transform: translateY(16px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 576px) {
+    .vg-modal { padding: 0; align-items: flex-end; }
+    .vg-modal-caja { max-height: 92vh; border-radius: 20px 20px 0 0; }
+    .vg-modal-pie { border-radius: 0; }
+}
+
+
+/* =========================================
+   CUADRÍCULA DE MÉDICOS (index y ventana de especialidad)
+   Se acomoda sola: 3 columnas en pantalla grande, 2 en tablet, 1 en celular
+   ========================================= */
+.vg-doctor-grid > .vg-doctor-card {
+    box-sizing: border-box;
+}
+
+.vg-doctor-grid {
+    display: grid;
+    /* máximo 3 columnas; si no caben de 290px, baja a 2 y luego a 1 */
+    grid-template-columns: repeat(auto-fill, minmax(max(290px, calc((100% - 32px) / 3)), 1fr));
+    gap: 16px;
+}
+
+.vg-grid-completa {
+    grid-column: 1 / -1;
+}
+
+.vg-modal .vg-doctor-grid {
+    grid-template-columns: repeat(auto-fill, minmax(max(300px, calc((100% - 16px) / 2)), 1fr));
+}
+
+/* Desplegables del buscador con el mismo aspecto que los campos de texto */
+select.vg-field-input.vg-field-select {
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding-right: 4px;
+}
+
+.vg-field:has(select) {
+    cursor: pointer;
+}
+
+.vg-field .vg-chevron {
+    pointer-events: none;
+}

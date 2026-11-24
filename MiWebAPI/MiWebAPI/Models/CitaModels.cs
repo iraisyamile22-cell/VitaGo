@@ -49,4 +49,14 @@ namespace MiWebAPI.Models
         public string? Ciudad { get; set; }
         public string Paciente { get; set; } = string.Empty;
     }
+
+    // POST api/citas/{id}/resena
+    public class ResenaCrear
+    {
+        [System.ComponentModel.DataAnnotations.Range(1, 5, ErrorMessage = "La calificación va de 1 a 5 estrellas")]
+        public int Calificacion { get; set; }
+
+        [System.ComponentModel.DataAnnotations.StringLength(1000)]
+        public string? Comentario { get; set; }
+    }
 }

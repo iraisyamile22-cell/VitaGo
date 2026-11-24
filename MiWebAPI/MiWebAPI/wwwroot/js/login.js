@@ -1,4 +1,4 @@
-// Requiere js/auth.js (guardarSesion, obtenerUsuario)
+﻿// Requiere js/auth.js (guardarSesion, obtenerUsuario)
 const RECORDAR_KEY = "vitago_correo_recordado";
 const formLogin = document.getElementById("formLogin");
 const correo = document.getElementById("correo");
@@ -8,8 +8,30 @@ const btnLogin = document.getElementById("btnLogin");
 const mensajeLogin = document.getElementById("mensajeLogin");
 const textoBotonOriginal = btnLogin.innerHTML;
 
+// A dónde regresar después de entrar (?volver=agendar-cita.html?medico=...). Solo rutas internas.
+function destinoDespuesDeLogin() {
+    const volver = new URLSearchParams(location.search).get("volver");
+    return volver && /^[\w\-]+\.html/.test(volver) ? volver : "index.html";
+}
+
 // Si ya hay una sesión activa, no tiene caso volver a iniciar sesión
-if (obtenerUsuario()) window.location.replace("index.html");
+if (obtenerUsuario()) window.location.replace(destinoDespuesDeLogin());
+
+// Mensaje informativo dentro de la tarjeta (reutiliza la alerta del login)
+function avisoLogin(texto, tipo = "info") {
+    mensajeLogin.textContent = texto;
+    mensajeLogin.className = `alert alert-${tipo}`;
+}
+
+// Mensaje que manda otra página (p. ej. después de registrarse o eliminar la cuenta)
+const avisoInicial = new URLSearchParams(location.search).get("aviso");
+if (avisoInicial === "registro-medico") avisoLogin("¡Registro completado! Tu perfil de médico ya aparece en el catálogo de vitaGo. Inicia sesión para entrar.", "success");
+if (avisoInicial === "cuenta-eliminada") avisoLogin("Tu cuenta fue eliminada. Gracias por usar vitaGo.", "secondary");
+
+document.querySelectorAll("[data-social]").forEach((boton) => {
+    boton.addEventListener("click", () =>
+        avisoLogin(`El acceso con ${boton.dataset.social} todavía no está disponible. Por ahora entra con tu correo y contraseña.`, "info"));
+});
 
 // Ojito: alterna entre ver y ocultar la contraseña
 const btnVerPassword = document.getElementById("btnVerPassword");
@@ -32,7 +54,7 @@ if (correoGuardado) {
 
 formLogin.addEventListener("submit", async (evento) => {
     evento.preventDefault();
-    mensajeLogin.classList.add("d-none");
+    mensajeLogin.className = "alert alert-danger d-none";
     btnLogin.disabled = true;
     btnLogin.textContent = "Ingresando...";
 
@@ -60,12 +82,12 @@ formLogin.addEventListener("submit", async (evento) => {
         if (recordar.checked) localStorage.setItem(RECORDAR_KEY, correo.value.trim());
         else localStorage.removeItem(RECORDAR_KEY);
 
-        window.location.replace("index.html");
+        window.location.replace(destinoDespuesDeLogin());
     } catch (error) {
         mensajeLogin.textContent = error instanceof TypeError
             ? "No se pudo conectar con la API. Verifica que el proyecto .NET esté ejecutándose."
             : error.message;
-        mensajeLogin.classList.remove("d-none");
+        mensajeLogin.className = "alert alert-danger";
     } finally {
         btnLogin.disabled = false;
         btnLogin.innerHTML = textoBotonOriginal;

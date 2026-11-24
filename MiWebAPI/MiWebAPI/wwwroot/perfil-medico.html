@@ -17,8 +17,10 @@
     <!-- Margen superior ajustado para que el menú flotante no tape el contenido -->
     <div class="container vg-page py-4" style="margin-top: 90px;">
 
-        <!-- Contenido principal del Perfil -->
-        <div class="row g-4">
+        <div id="mensaje" class="alert d-none" role="alert"></div>
+
+        <!-- Contenido principal del Perfil (lo llena js/perfil-medico.js con GET /api/doctores/{id}/perfil) -->
+        <div class="row g-4" id="contenidoPerfil">
 
             <!-- Columna Izquierda: Información del Doctor -->
             <div class="col-lg-8">
@@ -26,53 +28,41 @@
                 <!-- Tarjeta de Presentación -->
                 <div class="card border-0 shadow-sm p-4 mb-4 text-center text-md-start">
                     <div class="d-flex flex-column flex-md-row align-items-center gap-4">
-                        <img src="https://images.unsplash.com/photo-1594824813589-9828d40590a3?auto=format&fit=crop&w=300&q=80" alt="Dra. Lucía Gómez" class="rounded-circle shadow-sm" style="width: 120px; height: 120px; object-fit: cover;">
+                        <div id="fotoMedico" class="rounded-circle shadow-sm bg-success-subtle text-success d-flex align-items-center justify-content-center fw-bold fs-2" style="width: 120px; height: 120px; overflow: hidden; flex-shrink: 0;">…</div>
                         <div>
-                            <h1 class="h3 fw-bold text-dark mb-1">Dra. Lucía Gómez</h1>
-                            <p class="text-secondary small mb-2">Cardióloga • Especialista en prevención cardiovascular</p>
+                            <h1 class="h3 fw-bold text-dark mb-1"><span id="nombreMedico">Cargando...</span> <span id="badgeVerificado" class="badge bg-success-subtle text-success border border-success-subtle fs-6 align-middle d-none">✓ Verificado</span></h1>
+                            <p class="text-secondary small mb-2" id="especialidadMedico"></p>
+                            <span class="text-warning small" id="ratingMedico"></span>
 
                             <!-- Estadísticas rápidas -->
                             <div class="row g-2 text-center text-md-start mt-3">
                                 <div class="col-4 border-end">
                                     <div class="text-muted x-small">Experiencia</div>
-                                    <div class="fw-bold text-dark">12 años</div>
+                                    <div class="fw-bold text-dark" id="experienciaMedico">—</div>
                                 </div>
                                 <div class="col-4 border-end px-3">
                                     <div class="text-muted x-small">Pacientes</div>
-                                    <div class="fw-bold text-dark">2.4k+</div>
+                                    <div class="fw-bold text-dark" id="pacientesMedico">—</div>
                                 </div>
                                 <div class="col-4 ps-3">
                                     <div class="text-muted x-small">Idiomas</div>
-                                    <div class="fw-bold text-dark">Español, Inglés</div>
+                                    <div class="fw-bold text-dark" id="idiomasMedico">—</div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Acerca de la doctora -->
+                <!-- Acerca del médico -->
                 <div class="card border-0 shadow-sm p-4 mb-4">
-                    <h5 class="fw-bold mb-3">Acerca de la doctora</h5>
-                    <p class="text-secondary small line-height-relaxed">
-                        Me enfoco en la prevención temprana y en planes de tratamiento personalizados. Mi objetivo es que cada consulta sea clara, tranquila y orientada a resultados.
-                    </p>
+                    <h5 class="fw-bold mb-3">Acerca del especialista</h5>
+                    <p class="text-secondary small line-height-relaxed" id="bioMedico"></p>
 
                     <h6 class="fw-bold mt-4 mb-2">Especialidades</h6>
-                    <div class="d-flex flex-wrap gap-2 mb-3">
-                        <span class="badge bg-light text-secondary border px-3 py-2">Hipertensión</span>
-                        <span class="badge bg-light text-secondary border px-3 py-2">Colesterol</span>
-                        <span class="badge bg-light text-secondary border px-3 py-2">Electrocardiograma</span>
-                        <span class="badge bg-light text-secondary border px-3 py-2">Control de riesgo</span>
-                    </div>
+                    <div class="d-flex flex-wrap gap-2 mb-3" id="listaEspecialidades"></div>
 
                     <h6 class="fw-bold mt-4 mb-2">Ubicación</h6>
-                    <div class="p-3 bg-light rounded border d-flex align-items-center justify-content-between flex-wrap gap-2">
-                        <div>
-                            <div class="fw-bold text-dark small">Consultorio privado • Centro</div>
-                            <div class="text-muted x-small">Av. Libertador 1200, piso 4 • Santiago</div>
-                        </div>
-                        <a href="#" class="text-success text-decoration-none small fw-bold">Ver en mapa • 3.2 km de ti</a>
-                    </div>
+                    <div id="listaConsultorios" class="d-grid gap-2"></div>
                 </div>
 
                 <!-- Reseñas de pacientes -->
@@ -82,47 +72,42 @@
                             <h5 class="fw-bold mb-0">Reseñas de pacientes</h5>
                             <p class="text-muted small mb-0">Últimas opiniones verificadas</p>
                         </div>
-                        <div>
-                            <button class="btn btn-sm btn-outline-secondary me-1">Filtros</button>
-                            <button class="btn btn-sm btn-outline-secondary">Más recientes</button>
+                        <div class="btn-group btn-group-sm" role="group" aria-label="Ordenar reseñas">
+                            <button type="button" class="btn btn-outline-secondary active" data-orden="recientes">Más recientes</button>
+                            <button type="button" class="btn btn-outline-secondary" data-orden="mejores">Mejor calificadas</button>
                         </div>
                     </div>
-
-                    <!-- Reseña 1 -->
-                    <div class="border-bottom pb-3 mb-3">
-                        <div class="d-flex justify-content-between">
-                            <span class="fw-bold small text-dark">María R. <span class="text-muted fw-normal x-small">Hace 2 días</span></span>
-                            <span class="text-warning">⭐⭐⭐⭐⭐</span>
-                        </div>
-                        <p class="text-secondary small mt-2 mb-0">Excelente atención. La doctora explica todo con claridad y te hace sentir tranquilo desde el primer momento. La cita fue puntual y el seguimiento fue muy bueno.</p>
+                    <!-- Dejar reseña (js/perfil-medico.js lo muestra solo si el paciente ya tuvo cita con este médico) -->
+                    <div id="resena" class="d-none mb-4 p-3 rounded border" style="background: rgba(209, 250, 229, 0.35); scroll-margin-top: 110px;">
+                        <form id="formResena" novalidate>
+                            <h6 class="fw-bold mb-1">Deja tu reseña</h6>
+                            <p class="text-muted small mb-2" id="resenaCitaTexto"></p>
+                            <select id="resenaCita" class="form-select form-select-sm mb-2 d-none" aria-label="Cita que quieres calificar"></select>
+                            <div class="mb-2" role="radiogroup" aria-label="Calificación">
+                                <button type="button" class="vg-estrella" data-valor="1" aria-label="1 estrella">★</button>
+                                <button type="button" class="vg-estrella" data-valor="2" aria-label="2 estrellas">★</button>
+                                <button type="button" class="vg-estrella" data-valor="3" aria-label="3 estrellas">★</button>
+                                <button type="button" class="vg-estrella" data-valor="4" aria-label="4 estrellas">★</button>
+                                <button type="button" class="vg-estrella" data-valor="5" aria-label="5 estrellas">★</button>
+                                <span id="resenaEtiqueta" class="small text-muted ms-2">Elige de 1 a 5 estrellas</span>
+                            </div>
+                            <textarea id="resenaComentario" class="form-control form-control-sm mb-2" rows="3" maxlength="1000" placeholder="¿Cómo fue tu consulta? (opcional)"></textarea>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="x-small text-muted"><span id="resenaContador">0</span>/1000</span>
+                                <button type="submit" id="btnPublicarResena" class="btn btn-success btn-sm rounded-pill px-4 fw-semibold" style="background-color: #10b981; border: none;">Publicar reseña</button>
+                            </div>
+                        </form>
                     </div>
+                    <p id="resenaAviso" class="small text-muted d-none mb-3"></p>
 
-                    <!-- Reseña 2 -->
-                    <div class="border-bottom pb-3 mb-3">
-                        <div class="d-flex justify-content-between">
-                            <span class="fw-bold small text-dark">Carlos D. <span class="text-muted fw-normal x-small">Hace 1 semana</span></span>
-                            <span class="text-warning">⭐⭐⭐⭐☆</span>
-                        </div>
-                        <p class="text-secondary small mt-2 mb-0">Muy profesional. Me ayudó a entender mejor mi perfil de riesgo y a priorizar los cambios que debo hacer. La comunicación fue excelente.</p>
-                    </div>
-
-                    <!-- Reseña 3 -->
-                    <div>
-                        <div class="d-flex justify-content-between">
-                            <span class="fw-bold small text-dark">Sofía M. <span class="text-muted fw-normal x-small">Hace 3 semanas</span></span>
-                            <span class="text-warning">⭐⭐⭐⭐⭐</span>
-                        </div>
-                        <p class="text-secondary small mt-2 mb-0">La mejor experiencia que he tenido en una consulta médica. La doctora es amable, clara y muy atenta. Recomiendo 100%.</p>
-                    </div>
-
+                    <div id="listaResenas"></div>
                     <div class="text-center mt-3">
-                        <a href="#" class="text-decoration-none small text-success fw-bold">Ver todas las reseñas →</a>
+                        <a href="#" id="lnkTodasResenas" class="text-decoration-none small text-success fw-bold d-none">Ver todas las reseñas →</a>
                     </div>
                 </div>
-
             </div>
 
-            <!-- Columna Derecha: Costos, Horarios y Acciones Rápidas agrupados en un solo sticky-top -->
+            <!-- Columna Derecha: Costos, Horarios y Acciones Rápidas -->
             <div class="col-lg-4">
                 <div class="sticky-top" style="top: 100px;">
 
@@ -132,32 +117,22 @@
                             <span class="fw-bold text-dark">Costo y horarios</span>
                             <span class="badge bg-success-subtle text-success border border-success-subtle">Disponible</span>
                         </div>
-
                         <div class="mb-3">
-                            <div class="text-muted x-small">Consulta inicial</div>
-                            <div class="fs-2 fw-bold text-dark">$45.000</div>
-                            <div class="text-muted x-small">Incluye evaluación completa y plan de seguimiento.</div>
+                            <div class="text-muted x-small">Consulta</div>
+                            <div class="fs-2 fw-bold text-dark" id="precioMedico">—</div>
                         </div>
-
                         <hr class="text-muted opacity-25">
-
                         <div class="mb-3">
                             <div class="fw-bold small mb-2 text-dark">Horarios</div>
-                            <div class="d-flex justify-content-between text-secondary small py-1"><span>Lunes</span> <span>09:00-18:00</span></div>
-                            <div class="d-flex justify-content-between text-secondary small py-1"><span>Martes</span> <span>09:00-18:00</span></div>
-                            <div class="d-flex justify-content-between text-secondary small py-1"><span>Miércoles</span> <span>09:00-18:00</span></div>
-                            <div class="d-flex justify-content-between text-secondary small py-1"><span>Jueves</span> <span>09:00-18:00</span></div>
-                            <div class="d-flex justify-content-between text-secondary small py-1"><span>Viernes</span> <span>09:00-18:00</span></div>
+                            <div id="listaHorarios"></div>
                         </div>
-
                         <div class="text-secondary small mb-3">
-                            <div class="mb-1">💻 Consulta online disponible</div>
+                            <div class="mb-1" id="txtOnline">💻 Consulta online disponible</div>
                             <div class="mb-1">⚡ Confirmación inmediata</div>
-                            <div>🔒 Pago seguro en línea</div>
+                            <div>🔒 Tus datos protegidos</div>
                         </div>
-
                         <div class="d-grid gap-2" id="agendar">
-                            <a href="agendar-cita.html" class="vg-btn vg-btn-primary py-2 fw-bold text-white text-center text-decoration-none" style="border-radius: 8px;">Agendar cita con esta doctora</a>
+                            <a href="agendar-cita.html" id="btnAgendar" class="vg-btn vg-btn-primary py-2 fw-bold text-white text-center text-decoration-none" style="border-radius: 8px;">Agendar cita</a>
                         </div>
                         <div class="text-center mt-2">
                             <span class="x-small text-muted">Cancelación gratuita hasta 24h antes.</span>
@@ -167,32 +142,30 @@
                     <!-- Acciones Rápidas -->
                     <div class="card border-0 shadow-sm p-4">
                         <h6 class="fw-bold mb-3">Acciones rápidas</h6>
-                        <div class="d-flex align-items-center gap-3 mb-3 text-secondary small">
+                        <a id="accLlamar" href="#" class="d-flex align-items-center gap-3 mb-3 text-secondary small text-decoration-none">
                             <div class="bg-light p-2 rounded">📞</div>
                             <div>
                                 <div class="fw-bold text-dark">Llamar</div>
-                                <div class="x-small">+56 9 1234 5678</div>
+                                <div class="x-small" id="txtTelefono">Sin teléfono registrado</div>
                             </div>
-                        </div>
-                        <div class="d-flex align-items-center gap-3 mb-3 text-secondary small">
+                        </a>
+                        <a id="accMensaje" href="#" class="d-flex align-items-center gap-3 mb-3 text-secondary small text-decoration-none">
                             <div class="bg-light p-2 rounded">💬</div>
                             <div>
                                 <div class="fw-bold text-dark">Mensaje</div>
-                                <div class="x-small">Pregúntale a la doctora</div>
+                                <div class="x-small">Envíale un SMS al consultorio</div>
                             </div>
-                        </div>
-                        <div class="d-flex align-items-center gap-3 text-secondary small">
+                        </a>
+                        <a id="accMapa" href="#" target="_blank" rel="noopener" class="d-flex align-items-center gap-3 text-secondary small text-decoration-none">
                             <div class="bg-light p-2 rounded">🗺️</div>
                             <div>
                                 <div class="fw-bold text-dark">Ver en mapa</div>
                                 <div class="x-small">Abrir navegación</div>
                             </div>
-                        </div>
+                        </a>
                     </div>
-
                 </div>
             </div>
-
         </div>
 
         <!-- Footer -->
@@ -203,7 +176,13 @@
 
     </div>
 
-    <!-- Script del Navbar Dinámico -->
+    <script src="js/auth.js"></script>
     <script src="/js/navbar.js"></script>
+    <script src="js/perfil-medico.js"></script>
+    <style>
+        .vg-estrella { border: none; background: none; font-size: 1.6rem; line-height: 1; color: #cbd5e1; padding: 0 2px; cursor: pointer; transition: transform .1s; }
+        .vg-estrella:hover { transform: scale(1.15); }
+        .vg-estrella.activa { color: #f59e0b; }
+    </style>
 </body>
 </html>
