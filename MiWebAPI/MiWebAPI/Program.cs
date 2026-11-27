@@ -22,6 +22,15 @@ builder.Services.AddScoped<CitasData>();
 
 builder.Services.AddSingleton<EmpleadoData>();
 
+
+
+// Configurar las credenciales SMTP desde appsettings.json
+builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
+
+// Registrar el servicio para que pueda ser inyectado en los controladores
+builder.Services.AddTransient<EmailService>();
+// (AddTransient o AddScoped, cualquiera funciona bien aquí)
+
 var jwt = builder.Configuration.GetSection("Jwt");
 var jwtKey = jwt["Key"] ?? throw new InvalidOperationException("Falta Jwt:Key (usa user-secrets)");
 
