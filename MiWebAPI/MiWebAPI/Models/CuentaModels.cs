@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace MiWebAPI.Models
 {
@@ -33,6 +33,26 @@ namespace MiWebAPI.Models
 
         [Required, StringLength(72, MinimumLength = 8)]
         public string PasswordNueva { get; set; } = string.Empty;
+    }
+
+    // POST api/auth/verificar  (el token llega en el enlace del correo)
+    public class VerificarCorreoRequest
+    {
+        [Required, StringLength(100)]
+        public string Token { get; set; } = string.Empty;
+    }
+
+    // POST api/auth/reenviar-verificacion
+    public class ReenviarVerificacionRequest
+    {
+        [Required, EmailAddress, StringLength(254)]
+        public string Correo { get; set; } = string.Empty;
+    }
+
+    // Respuesta de los registros (paciente y médico): dice si salió el correo de verificación
+    public class RegistroRespuesta : RespuestaOperacion
+    {
+        public bool CorreoEnviado { get; set; }
     }
 
     // DELETE api/auth/cuenta  (se pide la contraseña para confirmar)

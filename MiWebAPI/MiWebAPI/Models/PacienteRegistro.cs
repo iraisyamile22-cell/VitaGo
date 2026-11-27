@@ -15,5 +15,9 @@ namespace MiWebAPI.Models
 
         [Required, StringLength(120)]
         public string Apellidos { get; set; } = string.Empty;
+
+        // Opcional: sp_registrarPaciente no lo recibe; la API lo guarda después con sp_editarPaciente
+        [StringLength(20)]
+        public string? Telefono { get; set; }
     }
 }

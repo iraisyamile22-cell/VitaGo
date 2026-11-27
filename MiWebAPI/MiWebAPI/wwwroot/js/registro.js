@@ -1,4 +1,5 @@
 // Registro de cuenta (diseño de Ayelen: primero se elige Paciente o Médico).
+// Al terminar, la cuenta queda SIN VERIFICAR y se muestra "Revisa tu correo" (pantallaCorreo).
 // Requiere js/auth.js (apiFetch, guardarSesion, escaparHtml).
 //   Paciente: POST /api/Pacientes (sp_registrarPaciente) -> POST /api/Auth/login
 //             -> PUT /api/Pacientes/perfil para guardar el teléfono (sp_editarPaciente)
@@ -127,27 +128,13 @@ formulario.addEventListener("submit", async (e) => {
 async function registrarPaciente(contrasena) {
     const correo = valor("correo");
 
-    await apiFetch("/api/Pacientes", {
+    // La API guarda también el teléfono y manda el correo de verificación
+    const r = await apiFetch("/api/Pacientes", {
         method: "POST",
-        body: { correo, password: contrasena, nombre: valor("nombre"), apellidos: valor("apellidos") }
+        body: { correo, password: contrasena, nombre: valor("nombre"), apellidos: valor("apellidos"), telefono: opcional("telefono") }
     });
 
-    // Cuenta creada: se inicia sesión automáticamente
-    const sesion = await apiFetch("/api/Auth/login", { method: "POST", body: { correo, password: contrasena } });
-    guardarSesion(sesion);
-
-    // sp_registrarPaciente no recibe teléfono; si lo escribió se guarda en su perfil
-    const telefono = opcional("telefono");
-    if (telefono) {
-        try {
-            await apiFetch("/api/Pacientes/perfil", {
-                method: "PUT",
-                body: { nombre: valor("nombre"), apellidos: valor("apellidos"), telefono }
-            });
-        } catch { /* la cuenta ya existe; el teléfono se puede agregar después en "Mi perfil" */ }
-    }
-
-    window.location.replace("index.html");
+    mostrarPantallaCorreo(correo, r?.correoEnviado);
 }
 
 async function registrarMedico(contrasena) {
@@ -156,7 +143,7 @@ async function registrarMedico(contrasena) {
     if (diaFin < diaInicio) throw new Error("El día final del horario no puede ser antes del día inicial.");
     if (valor("horaFin") <= valor("horaInicio")) throw new Error("La hora de salida debe ser después de la hora de entrada.");
 
-    await apiFetch("/api/doctores", {
+    const r = await apiFetch("/api/doctores", {
         method: "POST",
         body: {
             correo: valor("correo"),
@@ -181,8 +168,46 @@ async function registrarMedico(contrasena) {
         }
     });
 
-    window.location.href = "login.html?aviso=registro-medico";
+    mostrarPantallaCorreo(valor("correo"), r?.correoEnviado);
 }
+
+
+// =====================================
+// PANTALLA "REVISA TU CORREO"
+// =====================================
+
+let correoRegistrado = "";
+
+function mostrarPantallaCorreo(correo, enviado) {
+    correoRegistrado = correo;
+    pantallaFormulario.classList.add("oculto");
+    pantallaSeleccion.classList.add("oculto");
+    document.getElementById("pantallaCorreo").classList.remove("oculto");
+
+    const texto = document.getElementById("textoCorreoEnviado");
+    texto.innerHTML = enviado === false
+        ? `Tu cuenta quedó creada, pero no pudimos enviar el correo a <strong>${escaparHtml(correo)}</strong>. Presiona <strong>Reenviar correo</strong> en un minuto.`
+        : `Te enviamos un enlace a <strong>${escaparHtml(correo)}</strong> para activar tu cuenta.`;
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+document.getElementById("btnReenviarCorreo").addEventListener("click", async (e) => {
+    const boton = e.currentTarget;
+    const aviso = document.getElementById("mensajeReenvio");
+    boton.disabled = true;
+    try {
+        const r = await apiFetch("/api/Auth/reenviar-verificacion", { method: "POST", body: { correo: correoRegistrado } });
+        aviso.textContent = r?.respuesta || "Te enviamos un correo nuevo.";
+        aviso.className = "alert alert-success mx-auto";
+    } catch (error) {
+        aviso.textContent = error.message;
+        aviso.className = "alert alert-warning mx-auto";
+    } finally {
+        // Se puede volver a pedir después de un minuto
+        setTimeout(() => { boton.disabled = false; }, 60000);
+    }
+});
 
 
 // =====================================
