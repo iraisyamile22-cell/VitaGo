@@ -1,4 +1,4 @@
-using MiWebAPI.Data;
+﻿using MiWebAPI.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -21,6 +21,12 @@ builder.Services.AddSingleton<JwtService>();
 builder.Services.AddScoped<CitasData>();
 
 builder.Services.AddSingleton<EmpleadoData>();
+
+// Correo de verificación (Ayelen). Host/puerto/remitente en appsettings.json → "SmtpSettings";
+// la contraseña NUNCA en el repo: user-secrets en tu compu y Configuración → Variables en Azure.
+builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
+builder.Services.AddTransient<EmailService>();
+builder.Services.AddScoped<VerificacionCorreoService>();
 
 var jwt = builder.Configuration.GetSection("Jwt");
 var jwtKey = jwt["Key"] ?? throw new InvalidOperationException("Falta Jwt:Key (usa user-secrets)");

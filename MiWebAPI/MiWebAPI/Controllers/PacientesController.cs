@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MiWebAPI.Data;
 using MiWebAPI.Models;
+using MiWebAPI.Services;
 using System.Security.Claims;
 
 namespace MiWebAPI.Controllers
@@ -11,16 +12,44 @@ namespace MiWebAPI.Controllers
     public class PacientesController : ControllerBase
     {
         private readonly PacientesData _data;
+        private readonly AuthData _authData;
+        private readonly VerificacionCorreoService _verificacion;
 
-        public PacientesController(PacientesData data) => _data = data;
+        public PacientesController(PacientesData data, AuthData authData, VerificacionCorreoService verificacion)
+        {
+            _data = data;
+            _authData = authData;
+            _verificacion = verificacion;
+        }
 
-        // POST api/pacientes
+        // POST api/pacientes  -> registro + correo de verificación
         [HttpPost]
         public async Task<IActionResult> Registrar([FromBody] PacienteRegistro objeto)
         {
             RespuestaOperacion resultado = await _data.Registrar(objeto);
-            return resultado.IsSuccess ? Ok(resultado) : BadRequest(resultado);
+            if (!resultado.IsSuccess) return BadRequest(resultado);
+
+            // sp_registrarPaciente no recibe teléfono: si lo escribió, se guarda en su perfil
+            if (!string.IsNullOrWhiteSpace(objeto.Telefono)
+                && await _authData.ObtenerPorCorreo(objeto.Correo.Trim()) is { PerfilId: Guid pacienteId })
+            {
+                await _data.Editar(pacienteId, new PacienteEditar
+                {
+                    Nombre = objeto.Nombre,
+                    Apellidos = objeto.Apellidos,
+                    Telefono = objeto.Telefono
+                });
+            }
+
+            var (_, enviado) = await _verificacion.EnviarAsync(objeto.Correo.Trim(), Request);
+            return Ok(new RegistroRespuesta
+            {
+                NumeroError = 0,
+                Respuesta = resultado.Respuesta,
+                CorreoEnviado = enviado
+            });
         }
+
         // El paciente siempre sale del token, nunca de la petición
         private Guid? PacienteActual() =>
             Guid.TryParse(User.FindFirstValue("perfil_id"), out Guid id) ? id : null;

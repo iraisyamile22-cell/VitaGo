@@ -59,6 +59,48 @@ namespace MiWebAPI.Data
             Ejecutar("sp_eliminarUsuario", p =>
                 p.Add(new SqlParameter("@UsuarioId", SqlDbType.UniqueIdentifier) { Value = usuarioId }));
 
+        // ---------- Verificación de correo ----------
+
+        // sp_generarTokenVerificacion: guarda el hash del token y marca la cuenta como "sin verificar".
+        // Regresa también el nombre de la persona para saludarla en el correo.
+        public async Task<(RespuestaOperacion resultado, string? nombre)> GenerarTokenVerificacion(
+            string correo, string tokenHash, DateTime expiraUtc)
+        {
+            var nombre = new SqlParameter("@Nombre", SqlDbType.NVarChar, 80) { Direction = ParameterDirection.Output };
+            RespuestaOperacion r = await Ejecutar("sp_generarTokenVerificacion", p =>
+            {
+                p.Add(new SqlParameter("@Correo", SqlDbType.NVarChar, 254) { Value = correo.Trim() });
+                p.Add(new SqlParameter("@TokenHash", SqlDbType.Char, 64) { Value = tokenHash });
+                p.Add(new SqlParameter("@ExpiraUtc", SqlDbType.DateTime2) { Value = expiraUtc });
+                p.Add(nombre);
+            });
+            return (r, nombre.Value as string);
+        }
+
+        // sp_verificarCorreo: activa la cuenta si el token existe y no ha vencido
+        public Task<RespuestaOperacion> VerificarCorreo(string tokenHash) =>
+            Ejecutar("sp_verificarCorreo", p =>
+                p.Add(new SqlParameter("@TokenHash", SqlDbType.Char, 64) { Value = tokenHash }));
+
+        // sp_estadoVerificacion: ¿ya verificó su correo? (si algo falla, no se bloquea el login)
+        public async Task<bool> CorreoVerificado(Guid usuarioId)
+        {
+            try
+            {
+                await using var con = new SqlConnection(_conexion);
+                await using var cmd = new SqlCommand("sp_estadoVerificacion", con) { CommandType = CommandType.StoredProcedure };
+                cmd.Parameters.Add(new SqlParameter("@UsuarioId", SqlDbType.UniqueIdentifier) { Value = usuarioId });
+                await con.OpenAsync();
+                object? valor = await cmd.ExecuteScalarAsync();
+                return valor is not bool verificado || verificado;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al ejecutar sp_estadoVerificacion");
+                return true;
+            }
+        }
+
         // Ejecuta un SP con los parámetros de salida @numeroError y @respuesta
         private async Task<RespuestaOperacion> Ejecutar(string procedimiento, Action<SqlParameterCollection> parametros)
         {

@@ -26,6 +26,7 @@ function avisoLogin(texto, tipo = "info") {
 // Mensaje que manda otra página (p. ej. después de registrarse o eliminar la cuenta)
 const avisoInicial = new URLSearchParams(location.search).get("aviso");
 if (avisoInicial === "registro-medico") avisoLogin("¡Registro completado! Tu perfil de médico ya aparece en el catálogo de vitaGo. Inicia sesión para entrar.", "success");
+if (avisoInicial === "verificado") avisoLogin("¡Tu correo quedó verificado! Ya puedes iniciar sesión.", "success");
 if (avisoInicial === "cuenta-eliminada") avisoLogin("Tu cuenta fue eliminada. Gracias por usar vitaGo.", "secondary");
 
 document.querySelectorAll("[data-social]").forEach((boton) => {
@@ -70,6 +71,12 @@ formLogin.addEventListener("submit", async (evento) => {
         try { resultado = await respuesta.json(); } catch { /* respuesta sin cuerpo JSON */ }
 
         // Éxito = 200 OK con un token (LoginRespuesta). En 401 la API manda { respuesta: "..." }
+        // 403 = la cuenta existe y la contraseña es correcta, pero no ha verificado su correo
+        if (respuesta.status === 403 && resultado?.requiereVerificacion) {
+            mostrarCuentaSinVerificar(resultado.respuesta);
+            return;
+        }
+
         if (!respuesta.ok || !resultado?.token) {
             const motivo = resultado?.respuesta
                 || (respuesta.status === 400 ? "Revisa el correo y la contraseña." : null)
@@ -93,3 +100,29 @@ formLogin.addEventListener("submit", async (evento) => {
         btnLogin.innerHTML = textoBotonOriginal;
     }
 });
+
+// Cuenta sin verificar: mensaje + botón para reenviar el correo (POST /api/Auth/reenviar-verificacion)
+function mostrarCuentaSinVerificar(texto) {
+    mensajeLogin.className = "alert alert-warning";
+    mensajeLogin.replaceChildren(
+        Object.assign(document.createElement("div"), { className: "mb-2", textContent: texto }),
+        Object.assign(document.createElement("button"), {
+            type: "button",
+            className: "btn btn-sm btn-outline-dark rounded-pill px-3",
+            textContent: "Reenviar correo de verificación",
+            onclick: async (e) => {
+                const boton = e.currentTarget;
+                boton.disabled = true;
+                try {
+                    const r = await apiFetch("/api/Auth/reenviar-verificacion", {
+                        method: "POST",
+                        body: { correo: correo.value.trim() }
+                    });
+                    avisoLogin(r?.respuesta || "Te enviamos un correo nuevo.", "success");
+                } catch (error) {
+                    avisoLogin(error.message, "warning");
+                }
+            }
+        })
+    );
+}

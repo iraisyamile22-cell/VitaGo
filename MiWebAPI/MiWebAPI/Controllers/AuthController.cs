@@ -18,11 +18,13 @@ namespace MiWebAPI.Controllers
 
         private readonly AuthData _authData;
         private readonly JwtService _jwt;
+        private readonly VerificacionCorreoService _verificacion;
 
-        public AuthController(AuthData authData, JwtService jwt)
+        public AuthController(AuthData authData, JwtService jwt, VerificacionCorreoService verificacion)
         {
             _authData = authData;
             _jwt = jwt;
+            _verificacion = verificacion;
         }
 
         // POST api/auth/login
@@ -40,6 +42,15 @@ namespace MiWebAPI.Controllers
                     Respuesta = "Correo o contraseña incorrectos"
                 });
 
+            // Hasta que no abra el enlace del correo, no puede entrar
+            if (!await _authData.CorreoVerificado(u.UsuarioId))
+                return StatusCode(StatusCodes.Status403Forbidden, new
+                {
+                    NumeroError = 403,
+                    Respuesta = "Aún no verificas tu correo. Abre el enlace que te enviamos para activar tu cuenta.",
+                    RequiereVerificacion = true
+                });
+
             var (token, expira) = _jwt.Generar(u);
 
             return Ok(new LoginRespuesta
@@ -51,6 +62,29 @@ namespace MiWebAPI.Controllers
                 Rol = u.Rol,
                 Nombre = u.Nombre,
                 Correo = u.Correo
+            });
+        }
+
+        // POST api/auth/verificar  -> lo llama verificar.html con el token del enlace
+        [HttpPost("verificar")]
+        public async Task<IActionResult> VerificarCorreo([FromBody] VerificarCorreoRequest req)
+        {
+            RespuestaOperacion r = await _authData.VerificarCorreo(VerificacionCorreoService.Hash(req.Token.Trim()));
+            return r.IsSuccess ? Ok(r) : BadRequest(r);   // 1 = enlace inválido, 2 = vencido
+        }
+
+        // POST api/auth/reenviar-verificacion  -> manda un enlace nuevo
+        // Siempre responde lo mismo, para no revelar qué correos están registrados.
+        [HttpPost("reenviar-verificacion")]
+        public async Task<IActionResult> ReenviarVerificacion([FromBody] ReenviarVerificacionRequest req)
+        {
+            var (r, _) = await _verificacion.EnviarAsync(req.Correo.Trim(), Request);
+            if (r.NumeroError == 3) return StatusCode(StatusCodes.Status429TooManyRequests, r); // espera 1 minuto
+
+            return Ok(new RespuestaOperacion
+            {
+                NumeroError = 0,
+                Respuesta = "Si tu cuenta existe y aún no está verificada, te enviamos un correo nuevo. Revisa también la carpeta de spam."
             });
         }
 

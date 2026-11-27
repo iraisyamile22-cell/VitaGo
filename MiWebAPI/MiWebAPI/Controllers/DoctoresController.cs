@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MiWebAPI.Data;
 using MiWebAPI.Models;
+using MiWebAPI.Services;
 using System.Globalization;
 using System.Security.Claims;
 
@@ -74,13 +75,23 @@ namespace MiWebAPI.Controllers
             return Ok(slots);
         }
 
-        // POST api/doctores   (registro de médico; queda "pendiente" hasta que lo aprueben)
+        // POST api/doctores   (registro de médico + correo de verificación)
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> Crear([FromBody] DoctorRegistro objeto)
+        public async Task<IActionResult> Crear([FromBody] DoctorRegistro objeto,
+            [FromServices] VerificacionCorreoService verificacion)
         {
             RespuestaOperacion resultado = await _doctoresData.Crear(objeto);
-            return resultado.IsSuccess ? Ok(resultado) : BadRequest(resultado);
+            if (!resultado.IsSuccess) return BadRequest(resultado);
+
+            // Si lo registra un admin desde doctores.html, la cuenta igual se verifica por correo
+            var (_, enviado) = await verificacion.EnviarAsync(objeto.Correo.Trim(), Request);
+            return Ok(new RegistroRespuesta
+            {
+                NumeroError = 0,
+                Respuesta = resultado.Respuesta,
+                CorreoEnviado = enviado
+            });
         }
 
         // ===================== SOLO ADMIN =====================
